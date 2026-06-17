@@ -1,5 +1,5 @@
 export const STORE_INFO = {
-  name: "Caramelada Kids",
+  name: "Caramellada Kids",
   instagram: "@carameladakidsavare",
   instagramUrl: "https://instagram.com/carameladakidsavare",
   whatsapp: "(14) 99852-7789",

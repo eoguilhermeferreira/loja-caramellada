@@ -11,7 +11,7 @@ export async function generateMetadata({
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Categoria" };
 
-  const description = `Confira a coleção de ${category.name} na Caramelada Kids: roupas confortáveis e estilosas para bebês e crianças.`;
+  const description = `Confira a coleção de ${category.name} na Caramellada Kids: roupas confortáveis e estilosas para bebês e crianças.`;
 
   return {
     title: category.name,

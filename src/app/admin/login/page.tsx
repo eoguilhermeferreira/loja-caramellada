@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
         <h1 className="text-xl font-semibold text-brand-text">
           Painel Administrativo
         </h1>
-        <p className="mt-1 text-sm text-brand-text/60">Caramelada Kids</p>
+        <p className="mt-1 text-sm text-brand-text/60">Caramellada Kids</p>
 
         <div className="mt-6 flex flex-col gap-3">
           <input

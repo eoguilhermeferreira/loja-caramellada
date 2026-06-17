@@ -13,21 +13,21 @@ const poppins = Poppins({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const title = "Caramelada Kids | Moda Infantil com Qualidade e Carinho";
+const title = "Caramellada Kids | Moda Infantil com Qualidade e Carinho";
 const description =
-  "Roupas confortáveis e estilosas para bebês e crianças. Conheça a coleção da Caramelada Kids.";
+  "Roupas confortáveis e estilosas para bebês e crianças. Conheça a coleção da Caramellada Kids.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: title,
-    template: "%s | Caramelada Kids",
+    template: "%s | Caramellada Kids",
   },
   description,
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    siteName: "Caramelada Kids",
+    siteName: "Caramellada Kids",
     title,
     description,
     url: siteUrl,

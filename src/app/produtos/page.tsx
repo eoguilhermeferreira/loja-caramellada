@@ -4,7 +4,7 @@ import { getProducts } from "@/lib/queries";
 export const metadata = {
   title: "Todos os Produtos",
   description:
-    "Explore toda a coleção da Caramelada Kids: roupas confortáveis e estilosas para bebês e crianças.",
+    "Explore toda a coleção da Caramellada Kids: roupas confortáveis e estilosas para bebês e crianças.",
 };
 
 export default async function ProductsPage() {

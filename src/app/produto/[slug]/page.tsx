@@ -15,7 +15,7 @@ export async function generateMetadata({
 
   const description =
     product.description?.slice(0, 160) ||
-    `Confira ${product.name} na Caramelada Kids.`;
+    `Confira ${product.name} na Caramellada Kids.`;
   const image = product.product_images?.[0]?.url;
 
   return {
