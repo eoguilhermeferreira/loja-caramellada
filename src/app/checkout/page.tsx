@@ -147,7 +147,7 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">
+      <main className="mx-auto max-w-2xl animate-fade-in px-4 py-16 text-center sm:px-6">
         <h1 className="text-2xl font-semibold text-brand-text">
           Seu carrinho está vazio
         </h1>
@@ -164,7 +164,7 @@ export default function CheckoutPage() {
   const shippingCost = selectedShipping?.price ?? 0;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <main className="mx-auto max-w-5xl animate-fade-in px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-semibold text-brand-text">Finalizar Compra</h1>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">

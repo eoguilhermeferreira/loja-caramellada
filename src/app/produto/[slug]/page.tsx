@@ -11,7 +11,28 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  return { title: `${product?.name ?? "Produto"} | Caramelada Kids` };
+  if (!product) return { title: "Produto" };
+
+  const description =
+    product.description?.slice(0, 160) ||
+    `Confira ${product.name} na Caramelada Kids.`;
+  const image = product.product_images?.[0]?.url;
+
+  return {
+    title: product.name,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
 }
 
 export default async function ProductPage({
@@ -32,7 +53,7 @@ export default async function ProductPage({
   );
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <main className="mx-auto max-w-6xl animate-fade-in px-4 py-10 sm:px-6">
       <div className="grid gap-10 md:grid-cols-2">
         <ProductGallery images={sortedImages} productName={product.name} />
         <ProductDetails product={product} />

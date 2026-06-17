@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function CheckoutPendentePage() {
   return (
-    <main className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6">
+    <main className="mx-auto max-w-2xl animate-fade-in px-4 py-20 text-center sm:px-6">
       <h1 className="text-2xl font-semibold text-brand-text">
         Pagamento em análise
       </h1>

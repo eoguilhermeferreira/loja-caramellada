@@ -9,7 +9,15 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
-  return { title: `${category?.name ?? "Categoria"} | Caramelada Kids` };
+  if (!category) return { title: "Categoria" };
+
+  const description = `Confira a coleção de ${category.name} na Caramelada Kids: roupas confortáveis e estilosas para bebês e crianças.`;
+
+  return {
+    title: category.name,
+    description,
+    openGraph: { title: category.name, description },
+  };
 }
 
 export default async function CategoryPage({
@@ -24,7 +32,7 @@ export default async function CategoryPage({
   const products = await getProducts({ categorySlug: slug });
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <main className="mx-auto max-w-6xl animate-fade-in px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-semibold text-brand-text">
         {category.name}
       </h1>

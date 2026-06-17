@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
@@ -12,10 +12,37 @@ const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const title = "Caramelada Kids | Moda Infantil com Qualidade e Carinho";
+const description =
+  "Roupas confortáveis e estilosas para bebês e crianças. Conheça a coleção da Caramelada Kids.";
+
 export const metadata: Metadata = {
-  title: "Caramelada Kids | Moda Infantil com Qualidade e Carinho",
-  description:
-    "Roupas confortáveis e estilosas para bebês e crianças. Conheça a coleção da Caramelada Kids.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: title,
+    template: "%s | Caramelada Kids",
+  },
+  description,
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Caramelada Kids",
+    title,
+    description,
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#D81B60",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
