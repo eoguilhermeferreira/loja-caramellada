@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsappButton } from "@/components/WhatsappButton";
+import { CartProvider } from "@/components/CartProvider";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -25,10 +26,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${poppins.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-brand-bg text-brand-text">
-        <Header />
-        <div className="flex-1">{children}</div>
-        <Footer />
-        <WhatsappButton />
+        <CartProvider>
+          <Header />
+          <div className="flex-1">{children}</div>
+          <Footer />
+          <WhatsappButton />
+        </CartProvider>
       </body>
     </html>
   );

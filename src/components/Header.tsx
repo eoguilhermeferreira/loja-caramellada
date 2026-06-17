@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { STORE_INFO } from "@/config/store";
+import { CartLink } from "@/components/CartLink";
 
 const NAV_LINKS = [
   { label: "Bebês", href: "/categoria/bebes" },
@@ -33,12 +34,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/carrinho"
-            className="rounded-full border border-brand-primary px-4 py-2 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-primary hover:text-brand-white"
-          >
-            Carrinho
-          </Link>
+          <CartLink />
         </div>
       </div>
 
