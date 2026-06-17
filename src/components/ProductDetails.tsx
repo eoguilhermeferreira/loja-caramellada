@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/components/CartProvider";
+import { ShippingCalculator } from "@/components/ShippingCalculator";
 import type { Tables } from "@/types/database.types";
 
 type Product = Tables<"products"> & {
@@ -145,6 +146,8 @@ export function ProductDetails({ product }: { product: Product }) {
       >
         {outOfStock ? "Produto indisponível" : added ? "Adicionado!" : "Comprar"}
       </button>
+
+      <ShippingCalculator />
     </div>
   );
 }

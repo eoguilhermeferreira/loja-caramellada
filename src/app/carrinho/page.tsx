@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart, cartItemKey } from "@/components/CartProvider";
+import { ShippingCalculator } from "@/components/ShippingCalculator";
 import { formatPrice } from "@/lib/format";
 
 export default function CartPage() {
@@ -115,12 +116,16 @@ export default function CartPage() {
             <span>Subtotal</span>
             <span>{formatPrice(totalPrice)}</span>
           </div>
-          <p className="mt-1 text-xs text-brand-text/50">
-            Frete calculado na próxima etapa
-          </p>
           <div className="mt-4 flex items-center justify-between border-t border-brand-secondary/60 pt-4 text-base font-semibold text-brand-text">
             <span>Total</span>
             <span>{formatPrice(totalPrice)}</span>
+          </div>
+          <p className="mt-1 text-xs text-brand-text/50">
+            Frete calculado no checkout
+          </p>
+
+          <div className="mt-4">
+            <ShippingCalculator />
           </div>
 
           <Link
