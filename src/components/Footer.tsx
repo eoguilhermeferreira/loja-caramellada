@@ -79,7 +79,16 @@ export function Footer() {
       </div>
 
       <div className="border-t border-brand-secondary/40 px-4 py-4 text-center text-xs text-brand-text/60 sm:px-6">
-        © {new Date().getFullYear()} {STORE_INFO.name}. Todos os direitos reservados.
+        © {new Date().getFullYear()} {STORE_INFO.name}. Todos os direitos
+        reservados. |{" "}
+        <a
+          href="https://instagram.com/agencynodex"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium hover:text-brand-primary hover:underline"
+        >
+          Agência NODEX
+        </a>
       </div>
     </footer>
   );
