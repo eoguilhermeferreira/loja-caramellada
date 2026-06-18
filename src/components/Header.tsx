@@ -25,10 +25,10 @@ export function Header() {
           </span>
           <span className="text-xl font-semibold tracking-tight sm:text-2xl">
             <span className="text-brand-primary">Caramellada</span>{" "}
-            <span className="text-[#F2994A]">K</span>
-            <span className="text-[#27AE60]">I</span>
-            <span className="text-[#EE5C8C]">D</span>
-            <span className="text-[#7FCDBE]">S</span>
+            <span className="text-[#4FB3CC]">K</span>
+            <span className="text-[#9CCB3B]">I</span>
+            <span className="text-[#F0883E]">D</span>
+            <span className="text-[#AFDCC6]">S</span>
           </span>
         </Link>
 
