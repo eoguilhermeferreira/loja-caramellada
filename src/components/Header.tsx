@@ -15,12 +15,12 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-brand-secondary/60 bg-brand-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full sm:h-12 sm:w-12">
+          <span className="relative h-10 w-10 shrink-0 sm:h-12 sm:w-12">
             <Image
-              src="/logo.jpeg"
+              src="/logo-spiral.png"
               alt="Caramellada Kids"
               fill
-              className="scale-110 object-cover"
+              className="object-contain"
             />
           </span>
           <span className="text-xl font-semibold tracking-tight sm:text-2xl">
