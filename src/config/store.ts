@@ -1,7 +1,7 @@
 export const STORE_INFO = {
   name: "Caramellada Kids",
-  instagram: "@carameladakidsavare",
-  instagramUrl: "https://instagram.com/carameladakidsavare",
+  instagram: "@caramelladakidsavare",
+  instagramUrl: "https://instagram.com/caramelladakidsavare",
   whatsapp: "(14) 99852-7789",
   whatsappNumber: "5514998527789",
   email: "marciadamiao@hotmail.com",
