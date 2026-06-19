@@ -1,4 +1,5 @@
 import { BannerCarousel } from "@/components/BannerCarousel";
+import { SingleBanner } from "@/components/SingleBanner";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { ProductSection } from "@/components/ProductSection";
 import {
@@ -17,13 +18,15 @@ export default async function Home() {
       getPromoProducts(),
     ]);
 
+  const topBanners = banners.slice(0, 2);
+  const middleBanner = banners[2];
+  const lowerBanner = banners[3];
+
   return (
     <main className="animate-fade-in">
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-        <BannerCarousel banners={banners} />
+        <BannerCarousel banners={topBanners} />
       </div>
-
-      <CategoryGrid categories={categories} />
 
       <ProductSection
         title="Produtos em Destaque"
@@ -31,6 +34,20 @@ export default async function Home() {
         seeAllHref="/produtos"
         emptyMessage="Novidades chegando em breve. Volte para conferir!"
       />
+
+      {middleBanner && (
+        <div className="py-6">
+          <SingleBanner banner={middleBanner} />
+        </div>
+      )}
+
+      <CategoryGrid categories={categories} />
+
+      {lowerBanner && (
+        <div className="py-6">
+          <SingleBanner banner={lowerBanner} />
+        </div>
+      )}
 
       <ProductSection
         title="Promoções"

@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { label: "Bebês", href: "/categoria/bebes" },
   { label: "Meninas", href: "/categoria/meninas" },
   { label: "Meninos", href: "/categoria/meninos" },
+  { label: "Acessórios", href: "/categoria/acessorios" },
   { label: "Novidades", href: "/categoria/novidades" },
   { label: "Promoções", href: "/categoria/promocoes" },
 ];
