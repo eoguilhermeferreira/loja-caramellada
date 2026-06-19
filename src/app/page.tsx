@@ -28,6 +28,8 @@ export default async function Home() {
         <BannerCarousel banners={topBanners} />
       </div>
 
+      <CategoryGrid categories={categories} />
+
       <ProductSection
         title="Produtos em Destaque"
         products={featuredProducts}
@@ -40,8 +42,6 @@ export default async function Home() {
           <SingleBanner banner={middleBanner} />
         </div>
       )}
-
-      <CategoryGrid categories={categories} />
 
       {lowerBanner && (
         <div className="py-6">
