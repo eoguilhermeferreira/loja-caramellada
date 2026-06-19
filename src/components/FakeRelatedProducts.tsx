@@ -1,3 +1,11 @@
+import Link from "next/link";
+import { ProductCard } from "@/components/ProductCard";
+import type { Tables } from "@/types/database.types";
+
+type Product = Tables<"products"> & {
+  product_images: Tables<"product_images">[];
+};
+
 // TODO: dados de teste — remover quando o catálogo real tiver itens suficientes.
 const FAKE_ITEMS = [
   { name: "Conjunto Infantil Floral", price: 89.9, badge: "Roupa" },
@@ -8,19 +16,32 @@ const FAKE_ITEMS = [
   { name: "Kit Meias Coloridas", price: 19.9, badge: "Acessório" },
 ];
 
-export function FakeRelatedProducts() {
+export function FakeRelatedProducts({
+  products,
+  seeAllHref,
+}: {
+  products: Product[];
+  seeAllHref: string;
+}) {
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-brand-text">
-          Combine com estas peças e acessórios
+          Produtos Relacionados
         </h2>
-        <span className="text-xs font-medium text-brand-text/40">
-          (dados de teste)
-        </span>
+        <Link
+          href={seeAllHref}
+          className="text-sm font-medium text-brand-primary hover:underline"
+        >
+          Ver tudo
+        </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+
         {FAKE_ITEMS.map((item) => (
           <div
             key={item.name}

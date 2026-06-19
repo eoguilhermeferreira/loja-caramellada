@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductDetails } from "@/components/ProductDetails";
-import { ProductSection } from "@/components/ProductSection";
 import { FakeRelatedProducts } from "@/components/FakeRelatedProducts";
 import { BackButton } from "@/components/BackButton";
 import { getProductBySlug, getRelatedProducts } from "@/lib/queries";
@@ -62,18 +61,12 @@ export default async function ProductPage({
         <ProductDetails product={product} />
       </div>
 
-      <FakeRelatedProducts />
-
-      {relatedProducts.length > 0 && (
-        <ProductSection
-          title="Produtos Relacionados"
-          products={relatedProducts}
-          seeAllHref={
-            product.categories ? `/categoria/${product.categories.slug}` : "/produtos"
-          }
-          emptyMessage=""
-        />
-      )}
+      <FakeRelatedProducts
+        products={relatedProducts}
+        seeAllHref={
+          product.categories ? `/categoria/${product.categories.slug}` : "/produtos"
+        }
+      />
     </main>
   );
 }
