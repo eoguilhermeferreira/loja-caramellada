@@ -68,7 +68,7 @@ export function BannerCarousel({ banners }: { banners: Banner[] }) {
           className="flex h-full"
           style={{
             width: `${banners.length * 100}%`,
-            transform: `translateX(calc(${-index * 100}% + ${dragPercent}%))`,
+            transform: `translateX(calc(${-index * (100 / banners.length)}% + ${dragPercent / banners.length}%))`,
             transition: dragStartX.current === null ? "transform 0.4s ease" : "none",
           }}
         >
