@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, cartItemKey } from "@/components/CartProvider";
 import { formatPrice } from "@/lib/format";
@@ -51,6 +51,32 @@ export default function CheckoutPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addressLoading, setAddressLoading] = useState(false);
+
+  useEffect(() => {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    let cancelled = false;
+    setAddressLoading(true);
+    fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled || data.erro) return;
+        setStreet(data.logradouro ?? "");
+        setNeighborhood(data.bairro ?? "");
+        setCity(data.localidade ?? "");
+        setState(data.uf ?? "");
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setAddressLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cep]);
 
   async function handleCalculateShipping() {
     setError(null);
@@ -215,10 +241,11 @@ export default function CheckoutPage() {
               </div>
               <input
                 type="text"
-                placeholder="Rua"
+                placeholder={addressLoading ? "Buscando endereço..." : "Rua"}
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
+                disabled={addressLoading}
+                className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary disabled:opacity-60 sm:col-span-2"
               />
               <input
                 type="text"
@@ -361,7 +388,7 @@ export default function CheckoutPage() {
             disabled={submitting}
             className="mt-5 block w-full rounded-full bg-brand-primary px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
           >
-            {submitting ? "Processando..." : "Pagar com Mercado Pago"}
+            {submitting ? "Processando..." : "Pagar"}
           </button>
         </aside>
       </div>
