@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getPreferenceClient } from "@/lib/mercadopago";
 
 type CheckoutItem = {
   productId: string;
@@ -85,13 +84,6 @@ export async function POST(request: Request) {
     size: string | null;
     color: string | null;
   }[] = [];
-  const preferenceItems: {
-    id: string;
-    title: string;
-    quantity: number;
-    unit_price: number;
-    currency_id: string;
-  }[] = [];
 
   let subtotal = 0;
 
@@ -129,30 +121,11 @@ export async function POST(request: Request) {
       color: cartItem.color,
     });
 
-    preferenceItems.push({
-      id: product.id,
-      title: product.name,
-      quantity: cartItem.quantity,
-      unit_price: unitPrice,
-      currency_id: "BRL",
-    });
-
     subtotal += unitPrice * cartItem.quantity;
   }
 
   const freeShipping = isAvareCep(body.address.cep);
   const shippingCost = freeShipping ? 0 : body.shipping.cost;
-
-  if (shippingCost > 0) {
-    preferenceItems.push({
-      id: "frete",
-      title: `Frete (${body.shipping.method})`,
-      quantity: 1,
-      unit_price: shippingCost,
-      currency_id: "BRL",
-    });
-  }
-
   const total = subtotal + shippingCost;
 
   const { data: order, error: orderError } = await supabase
@@ -188,41 +161,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-  try {
-    const preferenceClient = getPreferenceClient();
-    const preference = await preferenceClient.create({
-      body: {
-        items: preferenceItems,
-        payer: {
-          name: body.customer.name,
-          email: body.customer.email,
-        },
-        external_reference: order.id,
-        back_urls: {
-          success: `${siteUrl}/checkout/sucesso`,
-          failure: `${siteUrl}/checkout/erro`,
-          pending: `${siteUrl}/checkout/pendente`,
-        },
-        auto_return: "approved",
-        notification_url: `${siteUrl}/api/mercadopago/webhook`,
-        payment_methods: {
-          excluded_payment_types: [{ id: "ticket" }, { id: "atm" }],
-        },
-      },
-    });
-
-    return NextResponse.json({
-      orderId: order.id,
-      orderNumber: order.order_number,
-      initPoint: preference.init_point,
-    });
-  } catch {
-    await supabase.from("orders").delete().eq("id", order.id);
-    return NextResponse.json(
-      { error: "Não foi possível iniciar o pagamento. Tente novamente." },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    orderId: order.id,
+    orderNumber: order.order_number,
+    total,
+  });
 }

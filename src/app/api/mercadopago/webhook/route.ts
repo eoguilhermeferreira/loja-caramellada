@@ -19,10 +19,11 @@ function mapPaymentStatus(status: string): "pendente" | "pago" | "falhou" | "ree
 
 function mapPaymentMethod(
   paymentTypeId: string
-): "pix" | "cartao_credito" | "cartao_debito" | null {
+): "pix" | "cartao_credito" | "cartao_debito" | "boleto" | null {
   if (paymentTypeId === "bank_transfer" || paymentTypeId === "pix") return "pix";
   if (paymentTypeId === "credit_card") return "cartao_credito";
   if (paymentTypeId === "debit_card") return "cartao_debito";
+  if (paymentTypeId === "ticket") return "boleto";
   return null;
 }
 

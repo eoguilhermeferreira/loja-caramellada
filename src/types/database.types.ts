@@ -336,7 +336,7 @@ export type Database = {
         | "entregue"
         | "cancelado"
       order_payment_status: "pendente" | "pago" | "falhou" | "reembolsado"
-      payment_method: "pix" | "cartao_credito" | "cartao_debito"
+      payment_method: "pix" | "cartao_credito" | "cartao_debito" | "boleto"
       shipping_method: "PAC" | "SEDEX"
     }
     CompositeTypes: {
@@ -472,7 +472,7 @@ export const Constants = {
         "cancelado",
       ],
       order_payment_status: ["pendente", "pago", "falhou", "reembolsado"],
-      payment_method: ["pix", "cartao_credito", "cartao_debito"],
+      payment_method: ["pix", "cartao_credito", "cartao_debito", "boleto"],
       shipping_method: ["PAC", "SEDEX"],
     },
   },

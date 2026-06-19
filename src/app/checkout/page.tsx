@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, cartItemKey } from "@/components/CartProvider";
 import { BackButton } from "@/components/BackButton";
+import { PaymentBrick } from "@/components/PaymentBrick";
 import { formatPrice } from "@/lib/format";
 
 const BRAZIL_STATES = [
@@ -31,7 +32,7 @@ function formatCep(value: string) {
 }
 
 export default function CheckoutPage() {
-  const { items, totalPrice } = useCart();
+  const { items, totalPrice, clear } = useCart();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -53,6 +54,7 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addressLoading, setAddressLoading] = useState(false);
+  const [order, setOrder] = useState<{ id: string; total: number } | null>(null);
 
   useEffect(() => {
     const digits = cep.replace(/\D/g, "");
@@ -164,7 +166,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      window.location.href = data.initPoint;
+      setOrder({ id: data.orderId, total: data.total });
     } catch {
       setError("Não foi possível finalizar a compra agora. Tente novamente.");
     } finally {
@@ -197,7 +199,7 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-semibold text-brand-text">Finalizar Compra</h1>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
-        <div className="flex flex-col gap-6 lg:col-span-2">
+        <fieldset disabled={!!order} className="flex flex-col gap-6 lg:col-span-2 disabled:opacity-60">
           <section className="rounded-xl bg-brand-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-brand-text">
               Dados de Contato
@@ -344,7 +346,7 @@ export default function CheckoutPage() {
               )}
             </div>
           </section>
-        </div>
+        </fieldset>
 
         <aside className="h-fit rounded-xl bg-brand-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-brand-text">
@@ -386,14 +388,30 @@ export default function CheckoutPage() {
 
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="mt-5 block w-full rounded-full bg-brand-primary px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
-          >
-            {submitting ? "Processando..." : "Pagar"}
-          </button>
+          {!order && (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="mt-5 block w-full rounded-full bg-brand-primary px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
+            >
+              {submitting ? "Processando..." : "Pagar"}
+            </button>
+          )}
         </aside>
+
+        {order && (
+          <div className="lg:col-span-3">
+            <PaymentBrick
+              orderId={order.id}
+              amount={order.total}
+              email={email}
+              onApproved={() => {
+                clear();
+                setTimeout(() => router.push("/checkout/sucesso"), 1500);
+              }}
+            />
+          </div>
+        )}
       </div>
     </main>
   );
