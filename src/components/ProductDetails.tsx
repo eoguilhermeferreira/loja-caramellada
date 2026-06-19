@@ -144,7 +144,11 @@ export function ProductDetails({ product }: { product: Product }) {
         disabled={outOfStock}
         className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-brand-secondary disabled:text-brand-text/50"
       >
-        {outOfStock ? "Produto indisponível" : added ? "Adicionado!" : "Comprar"}
+        {outOfStock
+          ? "Produto indisponível"
+          : added
+            ? "Adicionado!"
+            : "Comprar e Adicionar ao Carrinho"}
       </button>
 
       <ShippingCalculator />
