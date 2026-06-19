@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { calculateShipping } from "@/lib/correios";
+import { calculateShipping } from "@/lib/melhorenvio";
 
 function isAvareCep(cep: string) {
   const digits = cep.replace(/\D/g, "");
