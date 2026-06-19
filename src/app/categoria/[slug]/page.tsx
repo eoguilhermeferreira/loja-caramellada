@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/ProductGrid";
+import { BackButton } from "@/components/BackButton";
 import { getCategoryBySlug, getProducts } from "@/lib/queries";
 
 export async function generateMetadata({
@@ -33,6 +34,7 @@ export default async function CategoryPage({
 
   return (
     <main className="mx-auto max-w-6xl animate-fade-in px-4 py-10 sm:px-6">
+      <BackButton />
       <h1 className="text-2xl font-semibold text-brand-text">
         {category.name}
       </h1>

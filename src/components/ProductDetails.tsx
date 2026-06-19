@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/components/CartProvider";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
@@ -12,6 +13,7 @@ type Product = Tables<"products"> & {
 };
 
 export function ProductDetails({ product }: { product: Product }) {
+  const router = useRouter();
   const { addItem } = useCart();
   const sizes = product.product_sizes;
   const hasSizes = sizes.length > 0;
@@ -34,7 +36,7 @@ export function ProductDetails({ product }: { product: Product }) {
     (a, b) => a.display_order - b.display_order
   )[0];
 
-  function handleAddToCart() {
+  function addToCart() {
     addItem(
       {
         productId: product.id,
@@ -48,8 +50,17 @@ export function ProductDetails({ product }: { product: Product }) {
       },
       quantity
     );
+  }
+
+  function handleAddToCart() {
+    addToCart();
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  }
+
+  function handleBuyNow() {
+    addToCart();
+    router.push("/checkout");
   }
 
   return (
@@ -139,17 +150,22 @@ export function ProductDetails({ product }: { product: Product }) {
         </div>
       )}
 
-      <button
-        onClick={handleAddToCart}
-        disabled={outOfStock}
-        className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-brand-secondary disabled:text-brand-text/50"
-      >
-        {outOfStock
-          ? "Produto indisponível"
-          : added
-            ? "Adicionado!"
-            : "Comprar e Adicionar ao Carrinho"}
-      </button>
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={handleBuyNow}
+          disabled={outOfStock}
+          className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-accent disabled:cursor-not-allowed disabled:bg-brand-secondary disabled:text-brand-text/50"
+        >
+          {outOfStock ? "Produto indisponível" : "Comprar"}
+        </button>
+        <button
+          onClick={handleAddToCart}
+          disabled={outOfStock}
+          className="rounded-full border border-brand-primary px-6 py-3 text-sm font-semibold text-brand-primary transition-colors hover:bg-brand-primary hover:text-white disabled:cursor-not-allowed disabled:border-brand-secondary disabled:text-brand-text/50"
+        >
+          {outOfStock ? "Produto indisponível" : added ? "Adicionado!" : "Adicionar ao Carrinho"}
+        </button>
+      </div>
 
       <ShippingCalculator />
     </div>

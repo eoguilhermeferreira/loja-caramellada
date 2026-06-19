@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductDetails } from "@/components/ProductDetails";
 import { ProductSection } from "@/components/ProductSection";
+import { BackButton } from "@/components/BackButton";
 import { getProductBySlug, getRelatedProducts } from "@/lib/queries";
 
 export async function generateMetadata({
@@ -54,6 +55,7 @@ export default async function ProductPage({
 
   return (
     <main className="mx-auto max-w-6xl animate-fade-in px-4 py-10 sm:px-6">
+      <BackButton />
       <div className="grid gap-10 md:grid-cols-2">
         <ProductGallery images={sortedImages} productName={product.name} />
         <ProductDetails product={product} />

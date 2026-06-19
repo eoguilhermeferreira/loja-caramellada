@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, cartItemKey } from "@/components/CartProvider";
+import { BackButton } from "@/components/BackButton";
 import { formatPrice } from "@/lib/format";
 
 const BRAZIL_STATES = [
@@ -174,6 +175,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <main className="mx-auto max-w-2xl animate-fade-in px-4 py-16 text-center sm:px-6">
+        <BackButton />
         <h1 className="text-2xl font-semibold text-brand-text">
           Seu carrinho está vazio
         </h1>
@@ -191,6 +193,7 @@ export default function CheckoutPage() {
 
   return (
     <main className="mx-auto max-w-5xl animate-fade-in px-4 py-10 sm:px-6">
+      <BackButton />
       <h1 className="text-2xl font-semibold text-brand-text">Finalizar Compra</h1>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-3">

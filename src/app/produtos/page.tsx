@@ -1,4 +1,5 @@
 import { ProductGrid } from "@/components/ProductGrid";
+import { BackButton } from "@/components/BackButton";
 import { getProducts } from "@/lib/queries";
 
 export const metadata = {
@@ -12,6 +13,7 @@ export default async function ProductsPage() {
 
   return (
     <main className="mx-auto max-w-6xl animate-fade-in px-4 py-10 sm:px-6">
+      <BackButton />
       <h1 className="text-2xl font-semibold text-brand-text">
         Todos os Produtos
       </h1>
