@@ -30,7 +30,7 @@ export default async function Home() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl sm:aspect-[21/9]">
           <Image
-            src="/banners/novidades-toda-semana.jpeg"
+            src="/banners/novidades-toda-semana.png"
             alt="Caramellada Kids"
             fill
             className="object-cover"
