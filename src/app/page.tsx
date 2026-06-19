@@ -30,7 +30,7 @@ export default async function Home() {
       <CategoryGrid categories={categories} />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl sm:mx-auto sm:max-w-sm">
+        <div className="relative aspect-[3/2] w-full max-w-xl overflow-hidden rounded-2xl sm:mx-auto sm:max-w-2xl">
           <Image
             src="/banners/novidades-toda-semana.png"
             alt="Caramellada Kids"
