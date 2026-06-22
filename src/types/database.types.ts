@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
@@ -161,7 +163,7 @@ export type Database = {
           payment_status: Database["public"]["Enums"]["order_payment_status"]
           shipping_address: Json
           shipping_cost: number
-          shipping_method: Database["public"]["Enums"]["shipping_method"] | null
+          shipping_method: string | null
           subtotal: number
           total: number
           updated_at: string
@@ -179,9 +181,7 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["order_payment_status"]
           shipping_address: Json
           shipping_cost?: number
-          shipping_method?:
-            | Database["public"]["Enums"]["shipping_method"]
-            | null
+          shipping_method?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
@@ -199,9 +199,7 @@ export type Database = {
           payment_status?: Database["public"]["Enums"]["order_payment_status"]
           shipping_address?: Json
           shipping_cost?: number
-          shipping_method?:
-            | Database["public"]["Enums"]["shipping_method"]
-            | null
+          shipping_method?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
@@ -337,7 +335,6 @@ export type Database = {
         | "cancelado"
       order_payment_status: "pendente" | "pago" | "falhou" | "reembolsado"
       payment_method: "pix" | "cartao_credito" | "cartao_debito" | "boleto"
-      shipping_method: "PAC" | "SEDEX"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -473,7 +470,6 @@ export const Constants = {
       ],
       order_payment_status: ["pendente", "pago", "falhou", "reembolsado"],
       payment_method: ["pix", "cartao_credito", "cartao_debito", "boleto"],
-      shipping_method: ["PAC", "SEDEX"],
     },
   },
 } as const

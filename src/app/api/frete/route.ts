@@ -22,15 +22,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const { pac, sedex } = await calculateShipping(cep);
-  const options = [pac, sedex].filter(
-    (option): option is { service: "PAC" | "SEDEX"; price: number; deadlineDays: number } =>
-      "price" in option
-  );
-  const errors = [pac, sedex].filter(
-    (option): option is { service: "PAC" | "SEDEX"; message: string } =>
-      "message" in option
-  );
+  const { options, errors } = await calculateShipping(cep);
 
   return NextResponse.json({ freeShipping: false, options, errors });
 }

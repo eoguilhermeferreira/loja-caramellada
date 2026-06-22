@@ -135,7 +135,7 @@ export async function POST(request: Request) {
       customer_email: body.customer.email,
       customer_phone: body.customer.phone,
       shipping_address: body.address,
-      shipping_method: freeShipping ? null : (body.shipping.method as "PAC" | "SEDEX"),
+      shipping_method: freeShipping ? null : body.shipping.method,
       shipping_cost: shippingCost,
       subtotal,
       total,
