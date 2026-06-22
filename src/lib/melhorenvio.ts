@@ -60,7 +60,7 @@ export async function calculateShipping(cepDestino: string) {
 
     if (!response.ok) {
       const body = await response.text();
-      const message = `Não foi possível consultar o frete. [diag: status=${response.status}, body=${body.slice(0, 300)}]`;
+      const message = `Não foi possível consultar o frete. [diag: status=${response.status}, cepOrigemRaw="${process.env.CORREIOS_CEP_ORIGEM ?? ""}", cepOrigemDigits="${cepOrigem}", body=${body.slice(0, 300)}]`;
       return {
         pac: { service: "PAC" as const, message },
         sedex: { service: "SEDEX" as const, message },
