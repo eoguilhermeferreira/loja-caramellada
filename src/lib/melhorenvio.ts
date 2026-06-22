@@ -23,6 +23,22 @@ type MelhorEnvioItem = {
   error?: string | null;
 };
 
+const ALLOWED_SERVICES: { company: string; name: string }[] = [
+  { company: "Correios", name: "PAC" },
+  { company: "Correios", name: "SEDEX" },
+  { company: "Jadlog", name: ".Package" },
+  { company: "Jadlog", name: ".Com" },
+  { company: "Loggi", name: "Loggi" },
+];
+
+function isAllowedService(item: MelhorEnvioItem) {
+  const company = item.company?.name ?? "";
+  const name = item.name ?? "";
+  return ALLOWED_SERVICES.some(
+    (allowed) => company.includes(allowed.company) && name.includes(allowed.name)
+  );
+}
+
 export async function calculateShipping(cepDestino: string) {
   await connection();
   const token = process.env.MELHOR_ENVIO_TOKEN ?? "";
@@ -65,6 +81,8 @@ export async function calculateShipping(cepDestino: string) {
     const errors: ShippingError[] = [];
 
     for (const item of data) {
+      if (!isAllowedService(item)) continue;
+
       const service = [item.company?.name, item.name].filter(Boolean).join(" ") || "Frete";
       if (item.error) {
         errors.push({ service, message: item.error });
