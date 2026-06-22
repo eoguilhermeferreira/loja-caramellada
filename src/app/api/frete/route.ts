@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       freeShipping: true,
       options: [
-        { service: "Entrega Local", price: 0, deadlineDays: 2 },
+        { service: "Entrega Local", price: 0, deadlineDays: 1 },
       ],
     });
   }
