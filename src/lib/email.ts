@@ -27,7 +27,7 @@ export async function sendOrderStatusEmail({
   const statusLabel = STATUS_LABELS[status] ?? status;
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: "Caramellada Kids <onboarding@resend.dev>",
       to: customerEmail,
       subject: `Pedido #${orderNumber} - ${statusLabel}`,
@@ -37,7 +37,12 @@ export async function sendOrderStatusEmail({
         <p>Obrigado por comprar na Caramellada Kids!</p>
       `,
     });
-  } catch {
-    // falha no envio de e-mail não deve impedir a atualização do pedido
+    if (result.error) {
+      console.error("[email] Resend retornou erro:", result.error);
+    } else {
+      console.log("[email] Enviado com sucesso:", result.data?.id);
+    }
+  } catch (err) {
+    console.error("[email] Falha ao enviar e-mail:", err);
   }
 }
