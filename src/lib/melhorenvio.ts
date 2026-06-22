@@ -1,3 +1,5 @@
+import { connection } from "next/server";
+
 const MELHOR_ENVIO_ENDPOINT =
   "https://www.melhorenvio.com.br/api/v2/me/shipment/calculate";
 
@@ -25,6 +27,7 @@ type MelhorEnvioItem = {
 };
 
 export async function calculateShipping(cepDestino: string) {
+  await connection();
   const token = process.env.MELHOR_ENVIO_TOKEN ?? "";
   const cepOrigem = (process.env.CORREIOS_CEP_ORIGEM ?? "").replace(/\D/g, "");
 

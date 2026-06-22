@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = createAdminClient();
+  const supabase = await createAdminClient();
 
   const productIds = [...new Set(body.items.map((item) => item.productId))];
   const { data: products, error: productsError } = await supabase

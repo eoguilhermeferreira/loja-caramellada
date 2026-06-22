@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Dados de pagamento inválidos." }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
+  const supabase = await createAdminClient();
 
   const { data: order } = await supabase
     .from("orders")
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   try {
-    const paymentClient = getPaymentClient();
+    const paymentClient = await getPaymentClient();
     const payment = await paymentClient.create({
       body: {
         ...formData,

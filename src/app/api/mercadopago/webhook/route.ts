@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const paymentClient = getPaymentClient();
+    const paymentClient = await getPaymentClient();
     const payment = await paymentClient.get({ id: paymentId });
 
     const orderId = payment.external_reference;
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
-    const supabase = createAdminClient();
+    const supabase = await createAdminClient();
     const paymentStatus = mapPaymentStatus(payment.status ?? "");
 
     const { data: order } = await supabase

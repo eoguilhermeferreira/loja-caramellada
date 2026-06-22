@@ -1,4 +1,5 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { connection } from "next/server";
 
 function getClient() {
   return new MercadoPagoConfig({
@@ -6,6 +7,7 @@ function getClient() {
   });
 }
 
-export function getPaymentClient() {
+export async function getPaymentClient() {
+  await connection();
   return new Payment(getClient());
 }
