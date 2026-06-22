@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendOrderStatusEmail } from "@/lib/email";
 
 export async function logout() {
   const supabase = await createClient();
@@ -142,10 +143,21 @@ export async function updateOrderStatus(
   deliveryStatus: "processando" | "enviado" | "entregue" | "cancelado"
 ) {
   const supabase = await requireAdmin();
-  await supabase
+  const { data: order } = await supabase
     .from("orders")
     .update({ delivery_status: deliveryStatus })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    .select("order_number, customer_name, customer_email")
+    .single();
+
+  if (order) {
+    await sendOrderStatusEmail({
+      customerEmail: order.customer_email,
+      customerName: order.customer_name,
+      orderNumber: order.order_number,
+      status: deliveryStatus,
+    });
+  }
   revalidatePath("/admin/pedidos");
   revalidatePath(`/admin/pedidos/${orderId}`);
 }
