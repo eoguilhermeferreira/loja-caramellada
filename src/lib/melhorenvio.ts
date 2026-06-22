@@ -32,7 +32,7 @@ export async function calculateShipping(cepDestino: string) {
   const cepOrigem = (process.env.CORREIOS_CEP_ORIGEM ?? "").replace(/\D/g, "");
 
   if (!token) {
-    const message = "Cálculo de frete indisponível no momento.";
+    const message = `Cálculo de frete indisponível no momento. [diag: token ausente, env=${process.env.VERCEL_ENV ?? "?"}, branch=${process.env.VERCEL_GIT_COMMIT_REF ?? "?"}]`;
     return {
       pac: { service: "PAC" as const, message },
       sedex: { service: "SEDEX" as const, message },
