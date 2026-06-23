@@ -423,7 +423,7 @@ export default function CheckoutPage() {
               amount={order.total}
               email={email}
               name={name}
-              document={cpf.replace(/\D/g, "")}
+              cpf={cpf.replace(/\D/g, "")}
               address={{ cep, street, number, neighborhood, city, state }}
               onApproved={() => {
                 clear();

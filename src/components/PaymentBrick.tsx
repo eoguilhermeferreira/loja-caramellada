@@ -36,7 +36,7 @@ export function PaymentBrick({
   amount,
   email,
   name,
-  document,
+  cpf,
   address,
   onApproved,
 }: {
@@ -44,7 +44,7 @@ export function PaymentBrick({
   amount: number;
   email: string;
   name: string;
-  document: string;
+  cpf: string;
   address: Address;
   onApproved?: () => void;
 }) {
@@ -52,6 +52,28 @@ export function PaymentBrick({
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<PaymentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function copyPixCode(code: string) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        throw new Error("clipboard API indisponível");
+      }
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = code;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   useEffect(() => {
     if (initialized) return;
@@ -95,7 +117,7 @@ export function PaymentBrick({
         email,
         first_name: firstName,
         last_name: rest.join(" ") || firstName,
-        identification: { type: "CPF", number: document },
+        identification: { type: "CPF", number: cpf },
       },
     });
   }
@@ -108,7 +130,7 @@ export function PaymentBrick({
         email,
         first_name: firstName,
         last_name: rest.join(" ") || firstName,
-        identification: { type: "CPF", number: document },
+        identification: { type: "CPF", number: cpf },
         address: {
           zip_code: address.cep,
           street_name: address.street,
@@ -155,10 +177,10 @@ export function PaymentBrick({
                   rows={3}
                 />
                 <button
-                  onClick={() => navigator.clipboard.writeText(result.pix!.qrCode!)}
+                  onClick={() => copyPixCode(result.pix!.qrCode!)}
                   className="self-center rounded-full border border-brand-primary px-4 py-1.5 text-sm font-medium text-brand-primary transition-colors hover:bg-brand-primary hover:text-white"
                 >
-                  Copiar código Pix
+                  {copied ? "Copiado!" : "Copiar código Pix"}
                 </button>
               </div>
             )}
