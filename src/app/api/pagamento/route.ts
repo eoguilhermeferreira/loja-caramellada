@@ -100,7 +100,8 @@ export async function POST(request: Request) {
             }
           : null,
     });
-  } catch {
+  } catch (err) {
+    console.error("[pagamento] Falha ao processar:", JSON.stringify(err, null, 2));
     return NextResponse.json(
       { error: "Não foi possível processar o pagamento. Tente novamente." },
       { status: 500 }
