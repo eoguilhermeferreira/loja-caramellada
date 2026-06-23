@@ -13,6 +13,15 @@ type PaymentResult = {
   boleto?: { url?: string; digitableLine?: string } | null;
 };
 
+type Address = {
+  cep: string;
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+};
+
 const STATUS_LABELS: Record<string, string> = {
   approved: "Pagamento aprovado!",
   in_process: "Pagamento em análise.",
@@ -26,13 +35,21 @@ export function PaymentBrick({
   orderId,
   amount,
   email,
+  name,
+  document,
+  address,
   onApproved,
 }: {
   orderId: string;
   amount: number;
   email: string;
+  name: string;
+  document: string;
+  address: Address;
   onApproved?: () => void;
 }) {
+  const [method, setMethod] = useState<"cartao" | "pix" | "boleto">("cartao");
+  const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<PaymentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +61,65 @@ export function PaymentBrick({
       initialized = true;
     }
   }, []);
+
+  async function submitPayment(formData: object) {
+    setError(null);
+    setGenerating(true);
+    try {
+      const response = await fetch("/api/pagamento", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, formData }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Não foi possível processar o pagamento.");
+        return;
+      }
+      setResult(data);
+      if (data.status === "approved") {
+        onApproved?.();
+      }
+    } catch {
+      setError("Não foi possível processar o pagamento agora. Tente novamente.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function generatePix() {
+    const [firstName, ...rest] = name.trim().split(" ");
+    submitPayment({
+      payment_method_id: "pix",
+      payer: {
+        email,
+        first_name: firstName,
+        last_name: rest.join(" ") || firstName,
+        identification: { type: "CPF", number: document },
+      },
+    });
+  }
+
+  function generateBoleto() {
+    const [firstName, ...rest] = name.trim().split(" ");
+    submitPayment({
+      payment_method_id: "bolbradesco",
+      payer: {
+        email,
+        first_name: firstName,
+        last_name: rest.join(" ") || firstName,
+        identification: { type: "CPF", number: document },
+        address: {
+          zip_code: address.cep,
+          street_name: address.street,
+          street_number: address.number,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          federal_unit: address.state,
+        },
+      },
+    });
+  }
 
   if (result) {
     return (
@@ -125,44 +201,91 @@ export function PaymentBrick({
       <h2 className="text-lg font-semibold text-brand-text">
         Forma de Pagamento
       </h2>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <div className="mt-4">
-        <Payment
-          initialization={{ amount, payer: { email } }}
-          customization={{
-            paymentMethods: {
-              creditCard: "all",
-              debitCard: "all",
-              ticket: "all",
-              bankTransfer: "all",
-            },
-          }}
-          onSubmit={async ({ formData }) => {
-            setError(null);
-            try {
-              const response = await fetch("/api/pagamento", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ orderId, formData }),
-              });
-              const data = await response.json();
-              if (!response.ok) {
-                setError(data.error || "Não foi possível processar o pagamento.");
-                return;
-              }
-              setResult(data);
-              if (data.status === "approved") {
-                onApproved?.();
-              }
-            } catch {
-              setError("Não foi possível processar o pagamento agora. Tente novamente.");
-            }
-          }}
-          onError={() => {
-            setError("Ocorreu um erro ao carregar a forma de pagamento.");
-          }}
-        />
+
+      <div className="mt-4 flex gap-2">
+        <button
+          onClick={() => setMethod("cartao")}
+          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            method === "cartao"
+              ? "bg-brand-primary text-white"
+              : "bg-brand-secondary/20 text-brand-text"
+          }`}
+        >
+          Cartão
+        </button>
+        <button
+          onClick={() => setMethod("pix")}
+          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            method === "pix"
+              ? "bg-brand-primary text-white"
+              : "bg-brand-secondary/20 text-brand-text"
+          }`}
+        >
+          Pix
+        </button>
+        <button
+          onClick={() => setMethod("boleto")}
+          className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            method === "boleto"
+              ? "bg-brand-primary text-white"
+              : "bg-brand-secondary/20 text-brand-text"
+          }`}
+        >
+          Boleto
+        </button>
       </div>
+
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+      {method === "cartao" && (
+        <div className="mt-4">
+          <Payment
+            initialization={{ amount, payer: { email } }}
+            customization={{
+              paymentMethods: {
+                creditCard: "all",
+                debitCard: "all",
+              },
+            }}
+            onSubmit={async ({ formData }) => {
+              await submitPayment(formData);
+            }}
+            onError={() => {
+              setError("Ocorreu um erro ao carregar o formulário do cartão.");
+            }}
+          />
+        </div>
+      )}
+
+      {method === "pix" && (
+        <div className="mt-4 flex flex-col items-center gap-3 py-6">
+          <p className="text-center text-sm text-brand-text/70">
+            Clique no botão para gerar o QR Code do Pix.
+          </p>
+          <button
+            onClick={generatePix}
+            disabled={generating}
+            className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
+          >
+            {generating ? "Gerando..." : "Gerar PIX"}
+          </button>
+        </div>
+      )}
+
+      {method === "boleto" && (
+        <div className="mt-4 flex flex-col items-center gap-3 py-6">
+          <p className="text-center text-sm text-brand-text/70">
+            Clique no botão para gerar o boleto.
+          </p>
+          <button
+            onClick={generateBoleto}
+            disabled={generating}
+            className="rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
+          >
+            {generating ? "Gerando..." : "Gerar Boleto"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -31,6 +31,14 @@ function formatCep(value: string) {
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
+function formatCpf(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  return digits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
 export default function CheckoutPage() {
   const { items, totalPrice, clear } = useCart();
   const router = useRouter();
@@ -38,6 +46,7 @@ export default function CheckoutPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
 
   const [cep, setCep] = useState("");
   const [street, setStreet] = useState("");
@@ -118,8 +127,8 @@ export default function CheckoutPage() {
   async function handleSubmit() {
     setError(null);
 
-    if (!name || !email || !phone) {
-      setError("Preencha seus dados de contato.");
+    if (!name || !email || !phone || cpf.replace(/\D/g, "").length !== 11) {
+      setError("Preencha seus dados de contato, incluindo um CPF válido.");
       return;
     }
     if (!cep || !street || !number || !neighborhood || !city || !state) {
@@ -224,6 +233,14 @@ export default function CheckoutPage() {
                 placeholder="Telefone / WhatsApp"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
+              />
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="CPF"
+                value={cpf}
+                onChange={(e) => setCpf(formatCpf(e.target.value))}
                 className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
               />
             </div>
@@ -405,6 +422,9 @@ export default function CheckoutPage() {
               orderId={order.id}
               amount={order.total}
               email={email}
+              name={name}
+              document={cpf.replace(/\D/g, "")}
+              address={{ cep, street, number, neighborhood, city, state }}
               onApproved={() => {
                 clear();
                 setTimeout(() => router.push("/checkout/sucesso"), 1500);
