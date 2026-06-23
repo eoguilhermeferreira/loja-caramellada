@@ -147,7 +147,7 @@ export async function updateOrderStatus(
     .from("orders")
     .update({ delivery_status: deliveryStatus })
     .eq("id", orderId)
-    .select("order_number, customer_name, customer_email")
+    .select("order_number, customer_name, customer_email, tracking_url")
     .single();
 
   if (order) {
@@ -156,9 +156,19 @@ export async function updateOrderStatus(
       customerName: order.customer_name,
       orderNumber: order.order_number,
       status: deliveryStatus,
+      trackingUrl: order.tracking_url,
     });
   }
   revalidatePath("/admin/pedidos");
+  revalidatePath(`/admin/pedidos/${orderId}`);
+}
+
+export async function updateTrackingUrl(orderId: string, trackingUrl: string) {
+  const supabase = await requireAdmin();
+  await supabase
+    .from("orders")
+    .update({ tracking_url: trackingUrl || null })
+    .eq("id", orderId);
   revalidatePath(`/admin/pedidos/${orderId}`);
 }
 

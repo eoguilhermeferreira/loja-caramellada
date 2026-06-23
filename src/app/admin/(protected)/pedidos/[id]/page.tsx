@@ -106,7 +106,11 @@ export default async function AdminOrderDetailPage({
             </p>
             <div className="mt-3">
               <p className="mb-1 text-sm font-medium text-brand-text">Status de entrega</p>
-              <OrderStatusSelect orderId={order.id} currentStatus={order.delivery_status} />
+              <OrderStatusSelect
+                orderId={order.id}
+                currentStatus={order.delivery_status}
+                currentTrackingUrl={order.tracking_url}
+              />
             </div>
           </section>
         </aside>
