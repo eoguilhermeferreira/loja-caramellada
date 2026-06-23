@@ -333,6 +333,7 @@ export type Database = {
     Enums: {
       order_delivery_status:
         | "processando"
+        | "preparando"
         | "enviado"
         | "entregue"
         | "cancelado"
@@ -467,6 +468,7 @@ export const Constants = {
     Enums: {
       order_delivery_status: [
         "processando",
+        "preparando",
         "enviado",
         "entregue",
         "cancelado",

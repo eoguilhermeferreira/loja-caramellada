@@ -140,7 +140,7 @@ export async function deleteBanner(id: string) {
 
 export async function updateOrderStatus(
   orderId: string,
-  deliveryStatus: "processando" | "enviado" | "entregue" | "cancelado"
+  deliveryStatus: "preparando" | "enviado" | "entregue" | "cancelado"
 ) {
   const supabase = await requireAdmin();
   const { data: order } = await supabase
@@ -159,8 +159,13 @@ export async function updateOrderStatus(
       trackingUrl: order.tracking_url,
     });
   }
+  revalidatePath("/admin");
   revalidatePath("/admin/pedidos");
   revalidatePath(`/admin/pedidos/${orderId}`);
+}
+
+export async function acceptOrder(orderId: string) {
+  await updateOrderStatus(orderId, "preparando");
 }
 
 export async function updateTrackingUrl(orderId: string, trackingUrl: string) {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { OrderStatusSelect } from "@/app/admin/(protected)/pedidos/OrderStatusSelect";
+import { AcceptOrderButton } from "@/app/admin/(protected)/pedidos/AcceptOrderButton";
 
 const PAYMENT_LABELS: Record<string, string> = {
   pendente: "Pendente",
@@ -37,8 +38,14 @@ export default async function AdminOrderDetailPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-brand-text">
+      <h1 className="flex items-center gap-3 text-2xl font-semibold text-brand-text">
         Pedido #{order.order_number}
+        {order.delivery_status === "processando" && (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold text-brand-primary">
+            <span className="h-2 w-2 rounded-full bg-brand-primary" />
+            Novo Pedido
+          </span>
+        )}
       </h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
@@ -105,12 +112,18 @@ export default async function AdminOrderDetailPage({
               <span className="font-medium">{PAYMENT_LABELS[order.payment_status]}</span>
             </p>
             <div className="mt-3">
-              <p className="mb-1 text-sm font-medium text-brand-text">Status de entrega</p>
-              <OrderStatusSelect
-                orderId={order.id}
-                currentStatus={order.delivery_status}
-                currentTrackingUrl={order.tracking_url}
-              />
+              {order.delivery_status === "processando" ? (
+                <AcceptOrderButton orderId={order.id} />
+              ) : (
+                <>
+                  <p className="mb-1 text-sm font-medium text-brand-text">Status de entrega</p>
+                  <OrderStatusSelect
+                    orderId={order.id}
+                    currentStatus={order.delivery_status}
+                    currentTrackingUrl={order.tracking_url}
+                  />
+                </>
+              )}
             </div>
           </section>
         </aside>

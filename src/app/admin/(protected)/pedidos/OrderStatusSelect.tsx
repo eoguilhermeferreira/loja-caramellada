@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { updateOrderStatus, updateTrackingUrl } from "@/app/admin/actions";
 
 const STATUSES = [
-  { value: "processando", label: "Processando" },
+  { value: "preparando", label: "Preparando" },
   { value: "enviado", label: "Enviado" },
   { value: "entregue", label: "Entregue" },
   { value: "cancelado", label: "Cancelado" },
@@ -27,7 +27,7 @@ export function OrderStatusSelect({
   async function handleChange(value: string) {
     await updateOrderStatus(
       orderId,
-      value as "processando" | "enviado" | "entregue" | "cancelado"
+      value as "preparando" | "enviado" | "entregue" | "cancelado"
     );
     router.refresh();
   }

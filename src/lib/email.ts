@@ -14,7 +14,7 @@ const STATUS_CONTENT: Record<
   string,
   { subject: string; heading: string; body: (trackingUrl: string | null) => string }
 > = {
-  processando: {
+  preparando: {
     subject: "Seu pedido foi aceito! 🎉",
     heading: "Seu pedido foi aceito!",
     body: () =>

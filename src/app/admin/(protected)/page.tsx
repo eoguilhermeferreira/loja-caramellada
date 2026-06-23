@@ -19,8 +19,8 @@ export default async function AdminDashboardPage() {
       supabase
         .from("orders")
         .select("id, order_number, customer_name, total, payment_status, delivery_status, created_at")
-        .order("created_at", { ascending: false })
-        .limit(5),
+        .eq("delivery_status", "processando")
+        .order("created_at", { ascending: false }),
     ]);
 
   const revenue = (paidOrders ?? []).reduce((sum, o) => sum + o.total, 0);
@@ -80,11 +80,11 @@ export default async function AdminDashboardPage() {
 
         <section className="rounded-xl bg-brand-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-brand-text">
-            Pedidos recentes
+            Pedidos novos
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
             {(recentOrders ?? []).length === 0 && (
-              <p className="text-sm text-brand-text/50">Nenhum pedido ainda.</p>
+              <p className="text-sm text-brand-text/50">Nenhum pedido novo.</p>
             )}
             {recentOrders?.map((order) => (
               <li key={order.id} className="flex items-center justify-between text-sm">
