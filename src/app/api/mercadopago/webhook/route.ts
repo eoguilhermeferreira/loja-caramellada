@@ -107,7 +107,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ received: true });
-  } catch {
+  } catch (err) {
+    console.error("[mercadopago-webhook] Falha ao processar notificação:", err);
     return NextResponse.json({ received: true });
   }
 }
