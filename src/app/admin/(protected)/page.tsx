@@ -7,7 +7,10 @@ export default async function AdminDashboardPage() {
 
   const [{ count: orderCount }, { data: paidOrders }, { data: lowStock }, { data: recentOrders }] =
     await Promise.all([
-      supabase.from("orders").select("id", { count: "exact", head: true }),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("payment_status", "pago"),
       supabase.from("orders").select("total").eq("payment_status", "pago"),
       supabase
         .from("products")
@@ -19,6 +22,7 @@ export default async function AdminDashboardPage() {
       supabase
         .from("orders")
         .select("id, order_number, customer_name, total, payment_status, delivery_status, created_at")
+        .eq("payment_status", "pago")
         .eq("delivery_status", "processando")
         .order("created_at", { ascending: false }),
     ]);

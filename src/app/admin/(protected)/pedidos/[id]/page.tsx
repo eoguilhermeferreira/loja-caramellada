@@ -24,7 +24,7 @@ export default async function AdminOrderDetailPage({
     supabase.from("order_items").select("*").eq("order_id", id),
   ]);
 
-  if (!order) notFound();
+  if (!order || order.payment_status !== "pago") notFound();
 
   const address = order.shipping_address as {
     cep: string;

@@ -6,6 +6,7 @@ export default async function AdminOrdersPage() {
   const { data: orders } = await supabase
     .from("orders")
     .select("id, order_number, customer_name, total, payment_status, delivery_status, created_at")
+    .eq("payment_status", "pago")
     .order("created_at", { ascending: false });
 
   return (
