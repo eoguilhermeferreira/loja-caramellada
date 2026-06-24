@@ -21,66 +21,71 @@ export function OrderStatusSelect({
   currentTrackingUrl: string | null;
 }) {
   const router = useRouter();
+  const [status, setStatus] = useState(currentStatus);
   const [trackingUrl, setTrackingUrl] = useState(currentTrackingUrl ?? "");
-  const [savingTracking, setSavingTracking] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleChange(value: string) {
-    if (value === "enviado" && trackingUrl.trim()) {
-      await updateTrackingUrl(orderId, trackingUrl);
+  async function handleSave() {
+    setError(null);
+
+    if (status === "enviado" && !trackingUrl.trim()) {
+      setError(
+        "Cole o código de rastreio antes de marcar como Enviado, senão o cliente recebe o e-mail sem o código."
+      );
+      return;
     }
-    await updateOrderStatus(
-      orderId,
-      value as "preparando" | "enviado" | "entregue" | "cancelado"
-    );
-    router.refresh();
-  }
 
-  async function handleSaveTracking() {
-    setSavingTracking(true);
+    setSaving(true);
     try {
       await updateTrackingUrl(orderId, trackingUrl);
+      await updateOrderStatus(
+        orderId,
+        status as "preparando" | "enviado" | "entregue" | "cancelado"
+      );
       router.refresh();
     } finally {
-      setSavingTracking(false);
+      setSaving(false);
     }
   }
 
   return (
     <div className="flex flex-col gap-3">
       <select
-        defaultValue={currentStatus}
-        onChange={(e) => handleChange(e.target.value)}
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
         className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
       >
-        {STATUSES.map((status) => (
-          <option key={status.value} value={status.value}>
-            {status.label}
+        {STATUSES.map((s) => (
+          <option key={s.value} value={s.value}>
+            {s.label}
           </option>
         ))}
       </select>
 
       <div>
         <p className="mb-1 text-sm font-medium text-brand-text">Link de rastreio</p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="https://rastreamento.melhorenvio.com.br/..."
-            value={trackingUrl}
-            onChange={(e) => setTrackingUrl(e.target.value)}
-            className="w-full rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-          />
-          <button
-            onClick={handleSaveTracking}
-            disabled={savingTracking}
-            className="rounded-lg bg-brand-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
-          >
-            Salvar
-          </button>
-        </div>
+        <input
+          type="text"
+          placeholder="https://rastreamento.melhorenvio.com.br/..."
+          value={trackingUrl}
+          onChange={(e) => setTrackingUrl(e.target.value)}
+          className="w-full rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
+        />
         <p className="mt-1 text-xs text-brand-text/50">
           Cole aqui o link de rastreio depois de gerar a etiqueta no Melhor Envio. Ele será incluído no e-mail enviado ao cliente.
         </p>
       </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="rounded-lg bg-brand-primary px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
+      >
+        {saving ? "Salvando..." : "Salvar status"}
+      </button>
     </div>
   );
 }
