@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { WhatsappButton } from "@/components/WhatsappButton";
+import { SiteChrome } from "@/components/SiteChrome";
 import { CartProvider } from "@/components/CartProvider";
 
 const poppins = Poppins({
@@ -54,10 +52,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${poppins.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-brand-bg text-brand-text">
         <CartProvider>
-          <Header />
-          <div className="flex-1">{children}</div>
-          <Footer />
-          <WhatsappButton />
+          <SiteChrome>{children}</SiteChrome>
         </CartProvider>
       </body>
     </html>
