@@ -63,19 +63,21 @@ export function OrderStatusSelect({
         ))}
       </select>
 
-      <div>
-        <p className="mb-1 text-sm font-medium text-brand-text">Link de rastreio</p>
-        <input
-          type="text"
-          placeholder="https://rastreamento.melhorenvio.com.br/..."
-          value={trackingUrl}
-          onChange={(e) => setTrackingUrl(e.target.value)}
-          className="w-full rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-        />
-        <p className="mt-1 text-xs text-brand-text/50">
-          Cole aqui o link de rastreio depois de gerar a etiqueta no Melhor Envio. Ele será incluído no e-mail enviado ao cliente.
-        </p>
-      </div>
+      {status === "enviado" && (
+        <div>
+          <p className="mb-1 text-sm font-medium text-brand-text">Link de rastreio</p>
+          <input
+            type="text"
+            placeholder="https://rastreamento.melhorenvio.com.br/..."
+            value={trackingUrl}
+            onChange={(e) => setTrackingUrl(e.target.value)}
+            className="w-full rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
+          />
+          <p className="mt-1 text-xs text-brand-text/50">
+            Cole aqui o link de rastreio depois de gerar a etiqueta no Melhor Envio. Ele será incluído no e-mail enviado ao cliente.
+          </p>
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
