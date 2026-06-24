@@ -2,28 +2,18 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+
+const POLL_INTERVAL_MS = 8000;
 
 export function OrdersRealtimeListener() {
   const router = useRouter();
 
   useEffect(() => {
-    const supabase = createClient();
+    const interval = setInterval(() => {
+      router.refresh();
+    }, POLL_INTERVAL_MS);
 
-    const channel = supabase
-      .channel("admin-orders-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders" },
-        () => {
-          router.refresh();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(interval);
   }, [router]);
 
   return null;
