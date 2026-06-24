@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
+import { OrdersRealtimeListener } from "@/app/admin/(protected)/pedidos/OrdersRealtimeListener";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -31,6 +32,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
+      <OrdersRealtimeListener />
       <h1 className="text-2xl font-semibold text-brand-text">Dashboard</h1>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">

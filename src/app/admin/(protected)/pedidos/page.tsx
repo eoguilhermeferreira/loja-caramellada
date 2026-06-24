@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { OrderRow } from "@/app/admin/(protected)/pedidos/OrderRow";
+import { OrdersRealtimeListener } from "@/app/admin/(protected)/pedidos/OrdersRealtimeListener";
 
 export default async function AdminOrdersPage() {
   const supabase = await createClient();
@@ -11,6 +12,7 @@ export default async function AdminOrdersPage() {
 
   return (
     <div>
+      <OrdersRealtimeListener />
       <h1 className="text-2xl font-semibold text-brand-text">Pedidos</h1>
 
       <div className="mt-6 overflow-x-auto rounded-xl bg-brand-white shadow-sm">
