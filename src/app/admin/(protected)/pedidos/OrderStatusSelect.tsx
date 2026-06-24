@@ -25,6 +25,9 @@ export function OrderStatusSelect({
   const [savingTracking, setSavingTracking] = useState(false);
 
   async function handleChange(value: string) {
+    if (value === "enviado" && trackingUrl.trim()) {
+      await updateTrackingUrl(orderId, trackingUrl);
+    }
     await updateOrderStatus(
       orderId,
       value as "preparando" | "enviado" | "entregue" | "cancelado"
