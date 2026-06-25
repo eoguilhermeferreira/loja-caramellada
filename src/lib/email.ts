@@ -84,7 +84,7 @@ export async function sendOrderStatusEmail({
 
   try {
     const result = await resend.emails.send({
-      from: `${STORE.name} <onboarding@resend.dev>`,
+      from: `${STORE.name} <pedidos@caramelladakidsavare.com.br>`,
       to: customerEmail,
       subject: `Pedido #${orderNumber} - ${content.subject}`,
       html,
