@@ -6,6 +6,7 @@ import { logout } from "@/app/admin/actions";
 const NAV_LINKS = [
   { label: "Dashboard", href: "/admin" },
   { label: "Produtos", href: "/admin/produtos" },
+  { label: "Categorias", href: "/admin/categorias" },
   { label: "Banners", href: "/admin/banners" },
   { label: "Pedidos", href: "/admin/pedidos" },
 ];

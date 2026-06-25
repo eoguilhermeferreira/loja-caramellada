@@ -179,6 +179,33 @@ export async function updateTrackingUrl(orderId: string, trackingUrl: string) {
   revalidatePath(`/admin/pedidos/${orderId}`);
 }
 
+export async function uploadCategoryImage(formData: FormData) {
+  const file = formData.get("file") as File;
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const ext = file.name.split(".").pop();
+  const path = `${crypto.randomUUID()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("category-images")
+    .upload(path, file);
+  if (error) throw new Error(error.message);
+
+  const { data } = supabase.storage.from("category-images").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function updateCategoryImage(categoryId: string, imageUrl: string) {
+  const supabase = await requireAdmin();
+  await supabase
+    .from("categories")
+    .update({ image_url: imageUrl })
+    .eq("id", categoryId);
+  revalidatePath("/admin/categorias");
+  revalidatePath("/");
+}
+
 export async function uploadProductImage(formData: FormData) {
   const file = formData.get("file") as File;
   await requireAdmin();
