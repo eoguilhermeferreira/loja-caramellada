@@ -39,7 +39,19 @@ function isAllowedService(item: MelhorEnvioItem) {
   );
 }
 
-export async function calculateShipping(cepDestino: string) {
+export type PackageInfo = {
+  height: number;
+  width: number;
+  length: number;
+  weight: number;
+};
+
+const DEFAULT_PACKAGE: PackageInfo = { height: 10, width: 15, length: 20, weight: 0.5 };
+
+export async function calculateShipping(
+  cepDestino: string,
+  pkg: PackageInfo = DEFAULT_PACKAGE
+) {
   await connection();
   const token = process.env.MELHOR_ENVIO_TOKEN ?? "";
   const cepOrigem = (process.env.CORREIOS_CEP_ORIGEM ?? "").replace(/\D/g, "");
@@ -65,7 +77,7 @@ export async function calculateShipping(cepDestino: string) {
       body: JSON.stringify({
         from: { postal_code: cepOrigem },
         to: { postal_code: cepDestino.replace(/\D/g, "") },
-        package: { height: 10, width: 15, length: 20, weight: 0.5 },
+        package: pkg,
         options: { insurance_value: 0, receipt: false, own_hand: false },
       }),
       signal: AbortSignal.timeout(8000),

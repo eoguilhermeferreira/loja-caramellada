@@ -106,7 +106,10 @@ export default function CheckoutPage() {
       const response = await fetch("/api/frete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cep: digits }),
+        body: JSON.stringify({
+          cep: digits,
+          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+        }),
       });
       const data = await response.json();
       if (!response.ok) {

@@ -284,6 +284,7 @@ export type Database = {
           slug: string
           stock: number
           updated_at: string
+          weight_grams: number
         }
         Insert: {
           category_id?: string | null
@@ -298,6 +299,7 @@ export type Database = {
           slug: string
           stock?: number
           updated_at?: string
+          weight_grams?: number
         }
         Update: {
           category_id?: string | null
@@ -312,6 +314,7 @@ export type Database = {
           slug?: string
           stock?: number
           updated_at?: string
+          weight_grams?: number
         }
         Relationships: [
           {

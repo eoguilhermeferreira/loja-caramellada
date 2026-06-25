@@ -16,6 +16,7 @@ type ExistingProduct = {
   promo_price: number | null;
   color: string | null;
   stock: number;
+  weight_grams: number;
   is_active: boolean;
   product_images: { url: string }[];
   product_sizes: { size: string; stock: number }[];
@@ -151,6 +152,14 @@ export function ProductForm({
             name="stock"
             placeholder="Estoque geral (sem variação por tamanho)"
             defaultValue={product?.stock ?? 0}
+            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
+          />
+          <input
+            type="number"
+            name="weight_grams"
+            placeholder="Peso (em gramas)"
+            defaultValue={product?.weight_grams ?? 300}
+            required
             className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
           />
           <label className="flex items-center gap-2 text-sm text-brand-text sm:col-span-2">

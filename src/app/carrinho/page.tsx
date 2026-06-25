@@ -128,7 +128,9 @@ export default function CartPage() {
           </p>
 
           <div className="mt-4">
-            <ShippingCalculator />
+            <ShippingCalculator
+              items={items.map((i) => ({ productId: i.productId, quantity: i.quantity }))}
+            />
           </div>
 
           <Link

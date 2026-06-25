@@ -21,7 +21,11 @@ function formatCep(value: string) {
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
-export function ShippingCalculator() {
+export function ShippingCalculator({
+  items,
+}: {
+  items?: { productId: string; quantity: number }[];
+}) {
   const [cep, setCep] = useState("");
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,7 +46,7 @@ export function ShippingCalculator() {
       const response = await fetch("/api/frete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cep: digits }),
+        body: JSON.stringify({ cep: digits, items: items ?? [] }),
       });
       const data = await response.json();
       if (!response.ok) {

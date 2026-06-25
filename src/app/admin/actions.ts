@@ -39,6 +39,7 @@ export async function saveProduct(formData: FormData) {
   const promoPrice = promoPriceRaw ? Number(promoPriceRaw) : null;
   const color = (formData.get("color") as string) || null;
   const stock = Number(formData.get("stock") ?? 0);
+  const weightGrams = Number(formData.get("weight_grams") ?? 300);
   const isActive = formData.get("is_active") === "on";
 
   const sizesJson = String(formData.get("sizes") ?? "[]");
@@ -56,6 +57,7 @@ export async function saveProduct(formData: FormData) {
     promo_price: promoPrice,
     color,
     stock,
+    weight_grams: weightGrams,
     is_active: isActive,
   };
 

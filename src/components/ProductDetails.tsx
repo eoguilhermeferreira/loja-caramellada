@@ -167,7 +167,7 @@ export function ProductDetails({ product }: { product: Product }) {
         </button>
       </div>
 
-      <ShippingCalculator />
+      <ShippingCalculator items={[{ productId: product.id, quantity }]} />
     </div>
   );
 }
