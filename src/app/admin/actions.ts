@@ -32,6 +32,7 @@ export async function saveProduct(formData: FormData) {
 
   const id = formData.get("id") as string | null;
   const name = String(formData.get("name") ?? "").trim();
+  const code = String(formData.get("code") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const categoryId = (formData.get("category_id") as string) || null;
   const price = Number(formData.get("price"));
@@ -59,6 +60,7 @@ export async function saveProduct(formData: FormData) {
     stock,
     weight_grams: weightGrams,
     is_active: isActive,
+    ...(code ? { code } : {}),
   };
 
   let productId = id;

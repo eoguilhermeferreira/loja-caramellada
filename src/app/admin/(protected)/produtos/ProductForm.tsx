@@ -10,6 +10,7 @@ type Category = { id: string; name: string };
 type ExistingProduct = {
   id: string;
   name: string;
+  code: string;
   description: string;
   category_id: string | null;
   price: number;
@@ -102,6 +103,13 @@ export function ProductForm({
             placeholder="Nome do produto"
             defaultValue={product?.name}
             required
+            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
+          />
+          <input
+            type="text"
+            name="code"
+            placeholder="Código do produto (deixe em branco para gerar automaticamente)"
+            defaultValue={product?.code}
             className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
           />
           <textarea

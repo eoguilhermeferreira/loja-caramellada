@@ -3,12 +3,24 @@ import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { DeleteProductButton } from "./DeleteProductButton";
 
-export default async function AdminProductsPage() {
+export default async function AdminProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
-  const { data: products } = await supabase
+
+  let query = supabase
     .from("products")
-    .select("id, name, price, promo_price, stock, is_active, categories(name)")
+    .select("id, code, name, price, promo_price, stock, is_active, categories(name)")
     .order("created_at", { ascending: false });
+
+  if (q) {
+    query = query.ilike("code", `%${q.trim()}%`);
+  }
+
+  const { data: products } = await query;
 
   return (
     <div>
@@ -22,10 +34,35 @@ export default async function AdminProductsPage() {
         </Link>
       </div>
 
+      <form method="GET" className="mt-4 flex gap-2">
+        <input
+          type="text"
+          name="q"
+          defaultValue={q ?? ""}
+          placeholder="Buscar por código do produto"
+          className="w-full max-w-xs rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
+        />
+        <button
+          type="submit"
+          className="rounded-lg border border-brand-secondary px-4 py-2 text-sm font-medium text-brand-text transition-colors hover:border-brand-primary"
+        >
+          Buscar
+        </button>
+        {q && (
+          <Link
+            href="/admin/produtos"
+            className="flex items-center px-2 text-sm text-brand-text/60 hover:text-brand-primary"
+          >
+            Limpar
+          </Link>
+        )}
+      </form>
+
       <div className="mt-6 overflow-x-auto rounded-xl bg-brand-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-brand-secondary/60 text-brand-text/60">
+              <th className="px-4 py-3">Código</th>
               <th className="px-4 py-3">Nome</th>
               <th className="px-4 py-3">Categoria</th>
               <th className="px-4 py-3">Preço</th>
@@ -37,6 +74,7 @@ export default async function AdminProductsPage() {
           <tbody>
             {(products ?? []).map((product) => (
               <tr key={product.id} className="border-b border-brand-secondary/30">
+                <td className="px-4 py-3 font-mono text-brand-text/70">{product.code}</td>
                 <td className="px-4 py-3 font-medium text-brand-text">
                   <Link href={`/admin/produtos/${product.id}`} className="hover:text-brand-primary">
                     {product.name}
@@ -80,8 +118,8 @@ export default async function AdminProductsPage() {
             ))}
             {(products ?? []).length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-text/50">
-                  Nenhum produto cadastrado ainda.
+                <td colSpan={7} className="px-4 py-6 text-center text-brand-text/50">
+                  {q ? "Nenhum produto encontrado com esse código." : "Nenhum produto cadastrado ainda."}
                 </td>
               </tr>
             )}
