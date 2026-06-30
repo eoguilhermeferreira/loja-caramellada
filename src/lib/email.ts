@@ -3,8 +3,8 @@ import { Resend } from "resend";
 
 const STORE = {
   name: "Caramellada Kids",
-  whatsapp: "14998527889",
-  whatsappDisplay: "(14) 99852-7889",
+  whatsapp: "14998527884",
+  whatsappDisplay: "(14) 99852-7884",
   address: "Rua Minas Gerais, 667 - Centro, Avaré/SP",
   cep: "18708-863",
   cnpj: "38.219.114/0001-08",
