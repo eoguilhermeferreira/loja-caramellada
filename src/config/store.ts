@@ -22,6 +22,8 @@ export const SIZES = [
   "12",
   "14",
   "16",
+  "18",
+  "20",
 ] as const;
 
 export type Size = (typeof SIZES)[number];
