@@ -27,6 +27,25 @@ function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+async function uniqueSlug(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  base: string,
+  excludeId?: string | null
+): Promise<string> {
+  let candidate = base;
+  let counter = 2;
+  while (true) {
+    const query = supabase
+      .from("products")
+      .select("id")
+      .eq("slug", candidate);
+    if (excludeId) query.neq("id", excludeId);
+    const { data } = await query.maybeSingle();
+    if (!data) return candidate;
+    candidate = `${base}-${counter++}`;
+  }
+}
+
 export async function saveProduct(formData: FormData) {
   const supabase = await requireAdmin();
 
@@ -51,9 +70,11 @@ export async function saveProduct(formData: FormData) {
   const imagesJson = String(formData.get("images") ?? "[]");
   const images: string[] = JSON.parse(imagesJson);
 
+  const slug = await uniqueSlug(supabase, slugify(name), id);
+
   const productData = {
     name,
-    slug: slugify(name),
+    slug,
     description,
     category_id: categoryId,
     price,
