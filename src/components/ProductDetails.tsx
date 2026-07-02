@@ -15,19 +15,43 @@ type Product = Tables<"products"> & {
 export function ProductDetails({ product }: { product: Product }) {
   const router = useRouter();
   const { addItem } = useCart();
-  const sizes = product.product_sizes;
-  const hasSizes = sizes.length > 0;
+  const allSizes = product.product_sizes;
 
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    hasSizes ? sizes[0]?.size ?? null : null
+  const colors = useMemo(() => {
+    const names = [...new Set(allSizes.map((s) => s.color).filter(Boolean))] as string[];
+    return names;
+  }, [allSizes]);
+
+  const hasColors = colors.length > 0;
+  const hasSizes = allSizes.length > 0;
+
+  const [selectedColor, setSelectedColor] = useState<string | null>(
+    hasColors ? colors[0] : null
   );
+  const [selectedSize, setSelectedSize] = useState<string | null>(() => {
+    const firstColor = hasColors ? colors[0] : null;
+    const relevantSizes = allSizes.filter((s) => !hasColors || s.color === firstColor);
+    return relevantSizes[0]?.size ?? null;
+  });
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
+  const sizesForColor = useMemo(
+    () => allSizes.filter((s) => !hasColors || s.color === selectedColor),
+    [allSizes, hasColors, selectedColor]
+  );
+
   const selectedSizeStock = useMemo(() => {
     if (!hasSizes) return product.stock;
-    return sizes.find((s) => s.size === selectedSize)?.stock ?? 0;
-  }, [hasSizes, sizes, selectedSize, product.stock]);
+    return sizesForColor.find((s) => s.size === selectedSize)?.stock ?? 0;
+  }, [hasSizes, sizesForColor, selectedSize, product.stock]);
+
+  function handleColorChange(color: string) {
+    setSelectedColor(color);
+    const firstAvailable = allSizes.find((s) => s.color === color && s.stock > 0);
+    setSelectedSize(firstAvailable?.size ?? allSizes.find((s) => s.color === color)?.size ?? null);
+    setQuantity(1);
+  }
 
   const hasPromo =
     product.promo_price != null && product.promo_price < product.price;
@@ -45,7 +69,7 @@ export function ProductDetails({ product }: { product: Product }) {
         imageUrl: mainImage?.url ?? null,
         unitPrice: hasPromo ? product.promo_price! : product.price,
         size: selectedSize,
-        color: product.color,
+        color: selectedColor ?? product.color,
         stock: selectedSizeStock,
       },
       quantity
@@ -69,7 +93,7 @@ export function ProductDetails({ product }: { product: Product }) {
         <h1 className="text-2xl font-semibold text-brand-text sm:text-3xl">
           {product.name}
         </h1>
-        {product.color && (
+        {!hasColors && product.color && (
           <p className="mt-1 text-sm text-brand-text/60">
             Cor: <span className="font-medium">{product.color}</span>
           </p>
@@ -97,11 +121,32 @@ export function ProductDetails({ product }: { product: Product }) {
         {product.description}
       </p>
 
-      {hasSizes && (
+      {hasColors && (
+        <div>
+          <p className="mb-2 text-sm font-medium text-brand-text">Cor</p>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((color) => (
+              <button
+                key={color}
+                onClick={() => handleColorChange(color)}
+                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                  selectedColor === color
+                    ? "border-brand-primary bg-brand-primary text-white"
+                    : "border-brand-secondary text-brand-text hover:border-brand-primary"
+                }`}
+              >
+                {color}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sizesForColor.length > 0 && (
         <div>
           <p className="mb-2 text-sm font-medium text-brand-text">Tamanho</p>
           <div className="flex flex-wrap gap-2">
-            {sizes.map((s) => (
+            {sizesForColor.map((s) => (
               <button
                 key={s.id}
                 disabled={s.stock <= 0}

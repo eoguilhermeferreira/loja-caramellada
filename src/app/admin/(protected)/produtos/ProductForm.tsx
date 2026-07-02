@@ -7,6 +7,8 @@ import { SIZES } from "@/config/store";
 
 type Category = { id: string; name: string };
 
+type ColorEntry = { name: string; sizes: { size: string; stock: number }[] };
+
 type ExistingProduct = {
   id: string;
   name: string;
@@ -15,13 +17,23 @@ type ExistingProduct = {
   category_id: string | null;
   price: number;
   promo_price: number | null;
-  color: string | null;
   stock: number;
   weight_grams: number;
   is_active: boolean;
   product_images: { url: string }[];
-  product_sizes: { size: string; stock: number }[];
+  product_sizes: { size: string; stock: number; color: string | null }[];
 };
+
+function buildInitialColors(product: ExistingProduct | undefined): ColorEntry[] {
+  if (!product || product.product_sizes.length === 0) return [{ name: "", sizes: [] }];
+  const map = new Map<string, { size: string; stock: number }[]>();
+  for (const s of product.product_sizes) {
+    const key = s.color ?? "";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push({ size: s.size, stock: s.stock });
+  }
+  return Array.from(map.entries()).map(([name, sizes]) => ({ name, sizes }));
+}
 
 export function ProductForm({
   categories,
@@ -33,9 +45,7 @@ export function ProductForm({
   const [images, setImages] = useState<string[]>(
     product?.product_images.map((i) => i.url) ?? []
   );
-  const [sizes, setSizes] = useState<{ size: string; stock: number }[]>(
-    product?.product_sizes ?? []
-  );
+  const [colors, setColors] = useState<ColorEntry[]>(() => buildInitialColors(product));
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -63,17 +73,42 @@ export function ProductForm({
     setImages((current) => current.filter((i) => i !== url));
   }
 
-  function toggleSize(size: string) {
-    setSizes((current) => {
-      const exists = current.find((s) => s.size === size);
-      if (exists) return current.filter((s) => s.size !== size);
-      return [...current, { size, stock: 0 }];
-    });
+  function addColor() {
+    setColors((c) => [...c, { name: "", sizes: [] }]);
   }
 
-  function updateSizeStock(size: string, stock: number) {
-    setSizes((current) =>
-      current.map((s) => (s.size === size ? { ...s, stock } : s))
+  function removeColor(index: number) {
+    setColors((c) => c.filter((_, i) => i !== index));
+  }
+
+  function updateColorName(index: number, name: string) {
+    setColors((c) => c.map((entry, i) => (i === index ? { ...entry, name } : entry)));
+  }
+
+  function toggleSize(colorIndex: number, size: string) {
+    setColors((c) =>
+      c.map((entry, i) => {
+        if (i !== colorIndex) return entry;
+        const exists = entry.sizes.find((s) => s.size === size);
+        return {
+          ...entry,
+          sizes: exists
+            ? entry.sizes.filter((s) => s.size !== size)
+            : [...entry.sizes, { size, stock: 0 }],
+        };
+      })
+    );
+  }
+
+  function updateSizeStock(colorIndex: number, size: string, stock: number) {
+    setColors((c) =>
+      c.map((entry, i) => {
+        if (i !== colorIndex) return entry;
+        return {
+          ...entry,
+          sizes: entry.sizes.map((s) => (s.size === size ? { ...s, stock } : s)),
+        };
+      })
     );
   }
 
@@ -81,7 +116,7 @@ export function ProductForm({
     setSubmitting(true);
     setError(null);
     formData.set("images", JSON.stringify(images));
-    formData.set("sizes", JSON.stringify(sizes));
+    formData.set("colors", JSON.stringify(colors));
     try {
       await saveProduct(formData);
     } catch {
@@ -132,13 +167,6 @@ export function ProductForm({
             ))}
           </select>
           <input
-            type="text"
-            name="color"
-            placeholder="Cor"
-            defaultValue={product?.color ?? ""}
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-          />
-          <input
             type="number"
             step="0.01"
             name="price"
@@ -182,40 +210,77 @@ export function ProductForm({
       </section>
 
       <section className="rounded-xl bg-brand-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-brand-text">Tamanhos e estoque</h2>
-        <p className="mt-1 text-xs text-brand-text/50">
-          Selecione os tamanhos disponíveis e informe o estoque de cada um. Se o
-          produto não tem variação de tamanho, deixe todos desmarcados e use o
-          estoque geral acima.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {SIZES.map((size) => {
-            const selected = sizes.find((s) => s.size === size);
-            return (
-              <div key={size} className="flex flex-col items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => toggleSize(size)}
-                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                    selected
-                      ? "border-brand-primary bg-brand-primary text-white"
-                      : "border-brand-secondary text-brand-text hover:border-brand-primary"
-                  }`}
-                >
-                  {size}
-                </button>
-                {selected && (
-                  <input
-                    type="number"
-                    min={0}
-                    value={selected.stock}
-                    onChange={(e) => updateSizeStock(size, Number(e.target.value))}
-                    className="w-16 rounded-md border border-brand-secondary px-2 py-1 text-center text-xs"
-                  />
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-brand-text">Cores, tamanhos e estoque</h2>
+            <p className="mt-0.5 text-xs text-brand-text/50">
+              Adicione uma cor por vez com os tamanhos e estoques disponíveis. Se não tem variação de cor, deixe o campo de cor em branco.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addColor}
+            className="rounded-lg border border-brand-secondary px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:border-brand-primary"
+          >
+            + Cor
+          </button>
+        </div>
+
+        <div className="mt-4 flex flex-col gap-4">
+          {colors.map((entry, colorIndex) => (
+            <div key={colorIndex} className="rounded-lg border border-brand-secondary/60 p-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Nome da cor (ex: Azul, Rosa, Branco)"
+                  value={entry.name}
+                  onChange={(e) => updateColorName(colorIndex, e.target.value)}
+                  className="flex-1 rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
+                />
+                {colors.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeColor(colorIndex)}
+                    className="text-sm text-brand-text/40 hover:text-red-500"
+                  >
+                    Remover
+                  </button>
                 )}
               </div>
-            );
-          })}
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {SIZES.map((size) => {
+                  const selected = entry.sizes.find((s) => s.size === size);
+                  return (
+                    <div key={size} className="flex flex-col items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleSize(colorIndex, size)}
+                        className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                          selected
+                            ? "border-brand-primary bg-brand-primary text-white"
+                            : "border-brand-secondary text-brand-text hover:border-brand-primary"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                      {selected && (
+                        <input
+                          type="number"
+                          min={0}
+                          value={selected.stock}
+                          onChange={(e) =>
+                            updateSizeStock(colorIndex, size, Number(e.target.value))
+                          }
+                          className="w-16 rounded-md border border-brand-secondary px-2 py-1 text-center text-xs"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -14,7 +14,7 @@ export default async function EditProductPage({
     supabase.from("categories").select("id, name").order("display_order"),
     supabase
       .from("products")
-      .select("*, product_images(url), product_sizes(size, stock)")
+      .select("*, product_images(url), product_sizes(size, stock, color)")
       .eq("id", id)
       .maybeSingle(),
   ]);

@@ -38,13 +38,15 @@ export async function saveProduct(formData: FormData) {
   const price = Number(formData.get("price"));
   const promoPriceRaw = formData.get("promo_price");
   const promoPrice = promoPriceRaw ? Number(promoPriceRaw) : null;
-  const color = (formData.get("color") as string) || null;
   const stock = Number(formData.get("stock") ?? 0);
   const weightGrams = Number(formData.get("weight_grams") ?? 300);
   const isActive = formData.get("is_active") === "on";
 
-  const sizesJson = String(formData.get("sizes") ?? "[]");
-  const sizes: { size: string; stock: number }[] = JSON.parse(sizesJson);
+  const colorsJson = String(formData.get("colors") ?? "[]");
+  const colors: { name: string; sizes: { size: string; stock: number }[] }[] = JSON.parse(colorsJson);
+  const sizes = colors.flatMap((c) =>
+    c.sizes.map((s) => ({ size: s.size, stock: s.stock, color: c.name || null }))
+  );
 
   const imagesJson = String(formData.get("images") ?? "[]");
   const images: string[] = JSON.parse(imagesJson);
@@ -56,7 +58,7 @@ export async function saveProduct(formData: FormData) {
     category_id: categoryId,
     price,
     promo_price: promoPrice,
-    color,
+    color: colors.length === 1 && colors[0].name ? colors[0].name : colors.length > 1 ? colors.map((c) => c.name).join(", ") : null,
     stock,
     weight_grams: weightGrams,
     is_active: isActive,
@@ -86,7 +88,7 @@ export async function saveProduct(formData: FormData) {
 
   if (sizes.length > 0 && productId) {
     await supabase.from("product_sizes").insert(
-      sizes.map((s) => ({ product_id: productId!, size: s.size, stock: s.stock }))
+      sizes.map((s) => ({ product_id: productId!, size: s.size, stock: s.stock, color: s.color }))
     );
   }
 

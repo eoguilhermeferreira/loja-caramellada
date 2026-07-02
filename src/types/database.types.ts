@@ -243,18 +243,21 @@ export type Database = {
       }
       product_sizes: {
         Row: {
+          color: string | null
           id: string
           product_id: string
           size: string
           stock: number
         }
         Insert: {
+          color?: string | null
           id?: string
           product_id: string
           size: string
           stock?: number
         }
         Update: {
+          color?: string | null
           id?: string
           product_id?: string
           size?: string
