@@ -86,16 +86,38 @@ export async function getProductBySlug(slug: string) {
 export async function getRelatedProducts(
   categoryId: string | null,
   excludeProductId: string,
-  limit = 4
+  limit = 8
 ) {
-  if (!categoryId) return [];
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("products")
     .select("*, product_images(*)")
     .eq("is_active", true)
-    .eq("category_id", categoryId)
-    .neq("id", excludeProductId)
-    .limit(limit);
-  return data ?? [];
+    .neq("id", excludeProductId);
+
+  if (categoryId) {
+    query = query.eq("category_id", categoryId);
+  }
+
+  const { data } = await query;
+  if (!data || data.length === 0) {
+    // fallback: any active products
+    const { data: fallback } = await supabase
+      .from("products")
+      .select("*, product_images(*)")
+      .eq("is_active", true)
+      .neq("id", excludeProductId);
+    return shuffle(fallback ?? []).slice(0, limit);
+  }
+
+  return shuffle(data).slice(0, limit);
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
