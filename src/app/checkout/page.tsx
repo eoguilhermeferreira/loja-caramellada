@@ -6,6 +6,7 @@ import { useCart, cartItemKey } from "@/components/CartProvider";
 import { BackButton } from "@/components/BackButton";
 import { PaymentBrick } from "@/components/PaymentBrick";
 import { formatPrice } from "@/lib/format";
+import { STORE_INFO } from "@/config/store";
 
 const BRAZIL_STATES = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
@@ -55,6 +56,8 @@ export default function CheckoutPage() {
   const [neighborhood, setNeighborhood] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+
+  const [deliveryMode, setDeliveryMode] = useState<"delivery" | "pickup">("delivery");
 
   const [shippingResult, setShippingResult] = useState<ShippingResult | null>(null);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
@@ -134,14 +137,25 @@ export default function CheckoutPage() {
       setError("Preencha seus dados de contato, incluindo um CPF válido.");
       return;
     }
-    if (!cep || !street || !number || !neighborhood || !city || !state) {
+
+    const isPickup = deliveryMode === "pickup";
+
+    if (!isPickup && (!cep || !street || !number || !neighborhood || !city || !state)) {
       setError("Preencha o endereço completo.");
       return;
     }
-    if (!selectedShipping) {
+    if (!isPickup && !selectedShipping) {
       setError("Calcule e selecione uma opção de frete.");
       return;
     }
+
+    const shippingPayload = isPickup
+      ? { method: "Retirar na Loja", cost: 0 }
+      : { method: selectedShipping!.service, cost: selectedShipping!.price };
+
+    const addressPayload = isPickup
+      ? { cep: "18705010", street: "Retirar na Loja", number: "S/N", complement: "", neighborhood: "Centro", city: "Avaré", state: "SP" }
+      : { cep: cep.replace(/\D/g, ""), street, number, complement, neighborhood, city, state };
 
     setSubmitting(true);
     try {
@@ -156,19 +170,8 @@ export default function CheckoutPage() {
             color: item.color,
           })),
           customer: { name, email, phone },
-          address: {
-            cep: cep.replace(/\D/g, ""),
-            street,
-            number,
-            complement,
-            neighborhood,
-            city,
-            state,
-          },
-          shipping: {
-            method: selectedShipping.service,
-            cost: selectedShipping.price,
-          },
+          address: addressPayload,
+          shipping: shippingPayload,
         }),
       });
 
@@ -251,8 +254,43 @@ export default function CheckoutPage() {
 
           <section className="rounded-xl bg-brand-white p-5 shadow-sm">
             <h2 className="text-lg font-semibold text-brand-text">
-              Endereço de Entrega
+              Entrega
             </h2>
+
+            <div className="mt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setDeliveryMode("delivery"); setSelectedShipping(null); setShippingResult(null); }}
+                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deliveryMode === "delivery" ? "border-brand-primary bg-brand-secondary/20 text-brand-primary" : "border-brand-secondary text-brand-text/70 hover:border-brand-primary"}`}
+              >
+                🚚 Receber em Casa
+              </button>
+              <button
+                type="button"
+                onClick={() => { setDeliveryMode("pickup"); setSelectedShipping({ service: "Retirar na Loja", price: 0, deadlineDays: 0 }); setShippingResult(null); }}
+                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deliveryMode === "pickup" ? "border-brand-primary bg-brand-secondary/20 text-brand-primary" : "border-brand-secondary text-brand-text/70 hover:border-brand-primary"}`}
+              >
+                🏪 Retirar na Loja
+              </button>
+            </div>
+
+            {deliveryMode === "pickup" ? (
+              <div className="mt-4 rounded-lg border border-brand-primary/30 bg-brand-secondary/10 p-4">
+                <p className="text-sm font-semibold text-brand-primary">📍 Local de Retirada</p>
+                <p className="mt-1 text-sm text-brand-text">{STORE_INFO.name}</p>
+                <p className="mt-0.5 text-sm text-brand-text/80">{STORE_INFO.address}</p>
+                <p className="mt-2 text-xs text-brand-text/60">Após o pagamento, entraremos em contato via WhatsApp para combinar a retirada.</p>
+                <a
+                  href={`https://wa.me/${STORE_INFO.whatsappNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-block text-sm font-medium text-brand-primary hover:underline"
+                >
+                  WhatsApp: {STORE_INFO.whatsapp}
+                </a>
+              </div>
+            ) : (
+            <>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               <div className="flex gap-2 sm:col-span-1">
                 <input
@@ -365,6 +403,8 @@ export default function CheckoutPage() {
                 </div>
               )}
             </div>
+            </>
+            )}
           </section>
         </fieldset>
 
