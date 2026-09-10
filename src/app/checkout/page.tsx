@@ -1,6 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+function IconTruck({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M1 3h13v13H1zM14 8h4l3 3v5h-7V8z" />
+      <circle cx="5.5" cy="18.5" r="2.5" />
+      <circle cx="18.5" cy="18.5" r="2.5" />
+    </svg>
+  );
+}
+
+function IconStore({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M3 9l1-6h16l1 6" />
+      <path d="M3 9c0 1.1.9 2 2 2s2-.9 2-2 .9 2 2 2 2-.9 2-2 .9 2 2 2 2-.9 2-2 .9 2 2 2 2-.9 2-2" />
+      <path d="M5 11v9h14v-9" />
+      <rect x="9" y="15" width="6" height="5" />
+    </svg>
+  );
+}
 import { useRouter } from "next/navigation";
 import { useCart, cartItemKey } from "@/components/CartProvider";
 import { BackButton } from "@/components/BackButton";
@@ -261,22 +282,25 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => { setDeliveryMode("delivery"); setSelectedShipping(null); setShippingResult(null); }}
-                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deliveryMode === "delivery" ? "border-brand-primary bg-brand-secondary/20 text-brand-primary" : "border-brand-secondary text-brand-text/70 hover:border-brand-primary"}`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deliveryMode === "delivery" ? "border-brand-primary bg-brand-secondary/20 text-brand-primary" : "border-brand-secondary text-brand-text/70 hover:border-brand-primary"}`}
               >
-                🚚 Receber em Casa
+                <IconTruck className="h-4 w-4 shrink-0" /> Receber em Casa
               </button>
               <button
                 type="button"
                 onClick={() => { setDeliveryMode("pickup"); setSelectedShipping({ service: "Retirar na Loja", price: 0, deadlineDays: 0 }); setShippingResult(null); }}
-                className={`flex-1 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deliveryMode === "pickup" ? "border-brand-primary bg-brand-secondary/20 text-brand-primary" : "border-brand-secondary text-brand-text/70 hover:border-brand-primary"}`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${deliveryMode === "pickup" ? "border-brand-primary bg-brand-secondary/20 text-brand-primary" : "border-brand-secondary text-brand-text/70 hover:border-brand-primary"}`}
               >
-                🏪 Retirar na Loja
+                <IconStore className="h-4 w-4 shrink-0" /> Retirar na Loja
               </button>
             </div>
 
             {deliveryMode === "pickup" ? (
               <div className="mt-4 rounded-lg border border-brand-primary/30 bg-brand-secondary/10 p-4">
-                <p className="text-sm font-semibold text-brand-primary">📍 Local de Retirada</p>
+                <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-primary">
+                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                  Local de Retirada
+                </p>
                 <p className="mt-1 text-sm text-brand-text">{STORE_INFO.name}</p>
                 <p className="mt-0.5 text-sm text-brand-text/80">{STORE_INFO.address}</p>
                 <p className="mt-2 text-xs text-brand-text/60">Após o pagamento, entraremos em contato via WhatsApp para combinar a retirada.</p>

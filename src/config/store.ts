@@ -5,7 +5,8 @@ export const STORE_INFO = {
   whatsapp: "(14) 99852-7884",
   whatsappNumber: "5514998527884",
   email: "marciadamiao@hotmail.com",
-  address: "Rua XV de Novembro, 123 — Centro, Avaré/SP, CEP 18705-010",
+  address: "667, Centro, Avaré/SP, CEP 18700-100",
+  mapsUrl: "https://maps.google.com/?q=18700-100+Avaré+SP",
 } as const;
 
 export const SIZES = [
