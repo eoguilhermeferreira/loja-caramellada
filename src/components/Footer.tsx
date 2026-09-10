@@ -78,6 +78,32 @@ export function Footer() {
         </div>
       </div>
 
+      <div className="border-t border-brand-secondary/40 px-4 py-6 sm:px-6">
+        <p className="text-center text-xs font-semibold uppercase tracking-wide text-brand-text/60">
+          Formas de pagamento
+        </p>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          {[
+            { src: "/payment-icons/pix.svg", alt: "Pix" },
+            { src: "/payment-icons/visa.svg", alt: "Visa" },
+            { src: "/payment-icons/mastercard.svg", alt: "Mastercard" },
+            { src: "/payment-icons/elo.svg", alt: "Elo" },
+            { src: "/payment-icons/hipercard.svg", alt: "Hipercard" },
+            { src: "/payment-icons/amex.svg", alt: "American Express" },
+            { src: "/payment-icons/boleto.svg", alt: "Boleto" },
+          ].map((icon) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={icon.alt}
+              src={icon.src}
+              alt={icon.alt}
+              height={32}
+              style={{ height: 32, width: "auto", borderRadius: 4 }}
+            />
+          ))}
+        </div>
+      </div>
+
       <div className="border-t border-brand-secondary/40 px-4 py-4 text-center text-xs text-brand-text/60 sm:px-6">
         © {new Date().getFullYear()} {STORE_INFO.name}. Todos os direitos
         reservados. |{" "}
