@@ -36,10 +36,9 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen bg-brand-bg">
       <aside className="flex w-56 shrink-0 flex-col border-r border-brand-secondary/60 bg-brand-white p-5">
-        <p className="text-lg font-semibold text-brand-primary">
-          Caramellada Kids
-        </p>
-        <p className="mt-0.5 text-xs text-brand-text/50">Painel Admin</p>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-spiral.png" alt="Caramellada Kids" style={{ height: 56, width: "auto" }} />
+        <p className="mt-2 text-xs text-brand-text/50">Painel Admin</p>
 
         <nav className="mt-8 flex flex-col gap-1">
           {NAV_LINKS.map((link) => (

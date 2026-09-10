@@ -17,6 +17,7 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  icons: { icon: "/logo-spiral.png", apple: "/logo-spiral.png" },
   title: {
     default: title,
     template: "%s | Caramellada Kids",

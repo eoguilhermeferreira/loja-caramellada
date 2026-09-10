@@ -6,7 +6,9 @@ export function Footer() {
     <footer className="mt-16 border-t border-brand-secondary/60 bg-brand-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-3">
         <div>
-          <h3 className="text-lg font-semibold text-brand-primary">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-spiral.png" alt={STORE_INFO.name} style={{ height: 64, width: "auto" }} />
+          <h3 className="mt-2 text-lg font-semibold text-brand-primary">
             {STORE_INFO.name}
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-brand-text/70">

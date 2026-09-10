@@ -38,6 +38,8 @@ export default function AdminLoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-xl bg-brand-white p-6 shadow-sm"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-spiral.png" alt="Caramellada Kids" style={{ height: 72, width: "auto", display: "block", margin: "0 auto 12px" }} />
         <h1 className="text-xl font-semibold text-brand-text">
           Painel Administrativo
         </h1>
