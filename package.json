@@ -26,6 +26,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "payment-icons": "^1.2.1",
+    "simple-icons": "^16.30.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
