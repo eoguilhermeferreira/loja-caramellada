@@ -60,6 +60,7 @@ export async function saveProduct(formData: FormData) {
   const stock = Number(formData.get("stock") ?? 0);
   const weightGrams = Number(formData.get("weight_grams") ?? 300);
   const isActive = formData.get("is_active") === "on";
+  const isBestSeller = formData.get("is_best_seller") === "on";
 
   const colorsJson = String(formData.get("colors") ?? "[]");
   const colors: { name: string; sizes: { size: string; stock: number }[] }[] = JSON.parse(colorsJson);
@@ -83,6 +84,7 @@ export async function saveProduct(formData: FormData) {
     stock,
     weight_grams: weightGrams,
     is_active: isActive,
+    is_best_seller: isBestSeller,
     ...(code ? { code } : {}),
   };
 

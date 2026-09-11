@@ -30,6 +30,18 @@ export async function getFeaturedProducts(limit = 8) {
   return data ?? [];
 }
 
+export async function getBestSellerProducts(limit = 8) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("*, product_images(*)")
+    .eq("is_active", true)
+    .eq("is_best_seller", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
 export async function getPromoProducts(limit = 8) {
   const supabase = await createClient();
   const { data } = await supabase

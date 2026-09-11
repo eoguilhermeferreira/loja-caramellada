@@ -20,6 +20,7 @@ type ExistingProduct = {
   stock: number;
   weight_grams: number;
   is_active: boolean;
+  is_best_seller: boolean;
   product_images: { url: string }[];
   product_sizes: { size: string; stock: number; color: string | null }[];
 };
@@ -205,6 +206,17 @@ export function ProductForm({
               defaultChecked={product?.is_active ?? true}
             />
             Produto ativo (visível na loja)
+          </label>
+          <label className="flex items-center gap-2 text-sm text-brand-text sm:col-span-2">
+            <input
+              type="checkbox"
+              name="is_best_seller"
+              defaultChecked={product?.is_best_seller ?? false}
+            />
+            <span>
+              <span className="font-medium">Mais Vendido</span>
+              <span className="ml-1 text-brand-text/50">— aparece na seção "Mais Vendidos" da página inicial</span>
+            </span>
           </label>
         </div>
       </section>

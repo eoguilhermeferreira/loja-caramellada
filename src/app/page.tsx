@@ -6,6 +6,7 @@ import {
   getActiveBanners,
   getCategories,
   getFeaturedProducts,
+  getBestSellerProducts,
 } from "@/lib/queries";
 
 export default async function Home() {
@@ -14,7 +15,7 @@ export default async function Home() {
       getActiveBanners(),
       getCategories(),
       getFeaturedProducts(8),
-      getFeaturedProducts(8),
+      getBestSellerProducts(8),
     ]);
 
   const topBanners = banners.slice(0, 2);
