@@ -127,6 +127,7 @@ export async function saveProduct(formData: FormData) {
   }
 
   revalidatePath("/admin/produtos");
+  revalidatePath("/admin/produtos/[id]", "page");
   redirect("/admin/produtos");
 }
 
