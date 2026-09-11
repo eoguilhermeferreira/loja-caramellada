@@ -6,16 +6,15 @@ import {
   getActiveBanners,
   getCategories,
   getFeaturedProducts,
-  getPromoProducts,
 } from "@/lib/queries";
 
 export default async function Home() {
-  const [banners, categories, featuredProducts, promoProducts] =
+  const [banners, categories, featuredProducts, bestSellers] =
     await Promise.all([
       getActiveBanners(),
       getCategories(),
-      getFeaturedProducts(),
-      getPromoProducts(),
+      getFeaturedProducts(8),
+      getFeaturedProducts(8),
     ]);
 
   const topBanners = banners.slice(0, 2);
@@ -54,10 +53,10 @@ export default async function Home() {
       )}
 
       <ProductSection
-        title="Promoções"
-        products={promoProducts}
-        seeAllHref="/categoria/promocoes"
-        emptyMessage="Nenhuma promoção ativa no momento."
+        title="Mais Vendidos"
+        products={bestSellers}
+        seeAllHref="/produtos"
+        emptyMessage="Em breve nossos mais vendidos aqui!"
       />
     </main>
   );
