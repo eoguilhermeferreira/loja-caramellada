@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { BannerCarousel } from "@/components/BannerCarousel";
+import { BenefitsBar } from "@/components/BenefitsBar";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { ProductSection } from "@/components/ProductSection";
 import {
@@ -52,6 +53,8 @@ export default async function Home() {
           <BannerCarousel banners={lowerBanners} />
         </div>
       )}
+
+      <BenefitsBar />
 
       {bestSellers.length > 0 && (
         <ProductSection
