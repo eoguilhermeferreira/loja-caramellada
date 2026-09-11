@@ -197,7 +197,7 @@ export function Footer() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Agência NODEX"
-          className="inline-block opacity-70 transition-opacity hover:opacity-100"
+          className="inline-block transition-opacity hover:opacity-80"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/nodex-logo.png" alt="Agência NODEX" style={{ height: 64, width: "auto" }} />
