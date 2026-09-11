@@ -201,7 +201,7 @@ export function Footer() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/nodex-logo-white.png"
+            src="/nodex-logo.png"
             alt="Agência NODEX"
             style={{ height: 64, width: "auto" }}
           />
