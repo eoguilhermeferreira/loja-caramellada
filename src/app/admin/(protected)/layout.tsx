@@ -37,7 +37,7 @@ export default async function AdminLayout({
     <div className="flex min-h-screen bg-brand-bg">
       <aside className="flex w-56 shrink-0 flex-col border-r border-brand-secondary/60 bg-brand-white p-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/logo-spiral.png" alt="Caramellada Kids" style={{ height: 28, width: "auto", display: "block" }} />
+        <img src="/logo-spiral.png" alt="Caramellada Kids" style={{ height: 32, width: 32, alignSelf: "flex-start" }} />
         <p className="mt-2 text-xs text-brand-text/50">Painel Admin</p>
 
         <nav className="mt-8 flex flex-col gap-1">
