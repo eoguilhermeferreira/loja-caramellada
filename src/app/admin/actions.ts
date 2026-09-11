@@ -110,9 +110,10 @@ export async function saveProduct(formData: FormData) {
   }
 
   if (sizes.length > 0 && productId) {
-    await supabase.from("product_sizes").insert(
+    const { error: sizesError } = await supabase.from("product_sizes").insert(
       sizes.map((s) => ({ product_id: productId!, size: s.size, stock: s.stock, color: s.color }))
     );
+    if (sizesError) throw new Error(sizesError.message);
   }
 
   if (images.length > 0 && productId) {
