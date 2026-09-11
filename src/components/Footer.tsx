@@ -200,7 +200,7 @@ export function Footer() {
           className="inline-block opacity-70 transition-opacity hover:opacity-100"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/nodex-logo.png" alt="Agência NODEX" style={{ height: 40, width: "auto" }} />
+          <img src="/nodex-logo.png" alt="Agência NODEX" style={{ height: 64, width: "auto" }} />
         </a>
       </div>
     </footer>
