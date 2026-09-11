@@ -184,15 +184,20 @@ export function Footer() {
       </div>
 
       <div className="border-t border-brand-secondary/40 px-4 py-4 text-center text-xs text-brand-text/60 sm:px-6">
-        © {new Date().getFullYear()} {STORE_INFO.name}. Todos os direitos
-        reservados. |{" "}
+        © {new Date().getFullYear()} {STORE_INFO.name}. Todos os direitos reservados.
+      </div>
+
+      <div className="border-t border-brand-secondary/40 px-4 py-5 text-center sm:px-6">
+        <p className="mb-3 text-xs text-brand-text/40">Desenvolvido por</p>
         <a
           href="https://instagram.com/agencynodex"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium hover:text-brand-primary hover:underline"
+          aria-label="Agência NODEX"
+          className="inline-block opacity-70 transition-opacity hover:opacity-100"
         >
-          Agência NODEX
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/nodex-logo.png" alt="Agência NODEX" style={{ height: 40, width: "auto" }} />
         </a>
       </div>
     </footer>
