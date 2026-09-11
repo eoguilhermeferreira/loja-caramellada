@@ -53,12 +53,14 @@ export default async function Home() {
         </div>
       )}
 
-      <ProductSection
-        title="Mais Vendidos"
-        products={bestSellers}
-        seeAllHref="/produtos"
-        emptyMessage="Em breve nossos mais vendidos aqui!"
-      />
+      {bestSellers.length > 0 && (
+        <ProductSection
+          title="Mais Vendidos"
+          products={bestSellers}
+          seeAllHref="/produtos"
+          emptyMessage="Em breve nossos mais vendidos aqui!"
+        />
+      )}
     </main>
   );
 }
