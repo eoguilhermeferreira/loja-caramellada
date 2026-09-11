@@ -42,8 +42,12 @@ export function Footer() {
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-spiral.png" alt={STORE_INFO.name} style={{ height: 64, width: "auto" }} />
-          <h3 className="mt-2 text-lg font-semibold text-brand-primary">
-            {STORE_INFO.name}
+          <h3 className="mt-2 text-lg font-semibold">
+            <span className="text-brand-primary">Caramellada </span>
+            <span style={{ color: "#4FB3CC" }}>K</span>
+            <span style={{ color: "#9CCB3B" }}>I</span>
+            <span style={{ color: "#F0883E" }}>D</span>
+            <span style={{ color: "#AFDCC6" }}>S</span>
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-brand-text/70">
             Moda infantil com qualidade e carinho. Roupas confortáveis e
