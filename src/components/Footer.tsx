@@ -186,6 +186,7 @@ export function Footer() {
       <div className="border-t border-brand-secondary/40 px-4 py-5 text-center text-xs text-brand-text/60 sm:px-6">
         <p>© {new Date().getFullYear()} {STORE_INFO.name}.</p>
         <p className="mt-1">É vedada qualquer reprodução total ou parcial, nos termos da Lei nº 9.610/98. Todos os direitos reservados.</p>
+        <p className="mt-1">CNPJ: 38.219.114/0001-08</p>
         <p className="mt-1">{STORE_INFO.address}</p>
       </div>
 
