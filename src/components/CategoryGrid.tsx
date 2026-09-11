@@ -10,12 +10,12 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <h2 className="text-xl font-semibold text-brand-text">Categorias</h2>
-      <div className="mt-4 flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-5 md:overflow-visible md:pb-0">
+      <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
         {categories.map((category) => (
           <Link
             key={category.id}
             href={`/categoria/${category.slug}`}
-            className="group w-28 shrink-0 overflow-hidden rounded-xl bg-brand-secondary/40 transition-shadow hover:shadow-md md:w-auto"
+            className="group w-28 shrink-0 overflow-hidden rounded-xl bg-brand-secondary/40 transition-shadow hover:shadow-md"
           >
             <div className="relative aspect-square w-full overflow-hidden">
               {category.image_url ? (
