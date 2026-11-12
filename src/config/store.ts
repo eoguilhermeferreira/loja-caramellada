@@ -9,6 +9,13 @@ export const STORE_INFO = {
   mapsUrl: "https://maps.google.com/?q=18700-100+Avaré+SP",
 } as const;
 
+export const AVARE_SHIPPING_COST = 10;
+
+export function isAvareCep(cep: string) {
+  const digits = cep.replace(/\D/g, "");
+  return digits.length === 8 && digits.startsWith("1870");
+}
+
 export const SIZES = [
   "RN",
   "P",

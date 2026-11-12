@@ -46,7 +46,7 @@ async function uniqueSlug(
   }
 }
 
-export async function saveProduct(formData: FormData) {
+export async function saveProduct(formData: FormData): Promise<{ error: string } | void> {
   const supabase = await requireAdmin();
 
   const id = formData.get("id") as string | null;
@@ -57,19 +57,40 @@ export async function saveProduct(formData: FormData) {
   const price = Number(formData.get("price"));
   const promoPriceRaw = formData.get("promo_price");
   const promoPrice = promoPriceRaw ? Number(promoPriceRaw) : null;
-  const stock = Number(formData.get("stock") ?? 0);
   const weightGrams = Number(formData.get("weight_grams") ?? 300);
   const isActive = formData.get("is_active") === "on";
   const isBestSeller = formData.get("is_best_seller") === "on";
 
-  const colorsJson = String(formData.get("colors") ?? "[]");
-  const colors: { name: string; sizes: { size: string; stock: number }[] }[] = JSON.parse(colorsJson);
-  const sizes = colors.flatMap((c) =>
-    c.sizes.map((s) => ({ size: s.size, stock: s.stock, color: c.name || null }))
-  );
+  const variations: {
+    color: string;
+    size: string;
+    stock: number;
+    price: number | null;
+    barcodes: string[];
+  }[] = JSON.parse(String(formData.get("variations") ?? "[]"));
+  const photos: { url: string; color: string }[] = JSON.parse(String(formData.get("photos") ?? "[]"));
 
-  const imagesJson = String(formData.get("images") ?? "[]");
-  const images: string[] = JSON.parse(imagesJson);
+  const seen = new Set<string>();
+  for (const v of variations) {
+    const k = `${v.color.toLowerCase()}|${v.size.toLowerCase()}`;
+    if (seen.has(k)) return { error: `Variação repetida: ${[v.color, v.size].filter(Boolean).join(" / ") || "sem cor e sem tamanho"}.` };
+    seen.add(k);
+  }
+  const allBarcodes = variations.flatMap((v) => v.barcodes);
+  if (new Set(allBarcodes).size !== allBarcodes.length) return { error: "Há código de barras repetido entre as variações." };
+  if (allBarcodes.length > 0) {
+    let conflictQuery = supabase.from("product_barcodes").select("barcode, products(name)").in("barcode", allBarcodes);
+    if (id) conflictQuery = conflictQuery.neq("product_id", id);
+    const { data: conflicts } = await conflictQuery;
+    if (conflicts?.length) {
+      return { error: `Código de barras ${conflicts[0].barcode} já está no produto "${conflicts[0].products?.name ?? "outro"}".` };
+    }
+  }
+
+  const stock = variations.length > 0
+    ? variations.reduce((sum, v) => sum + v.stock, 0)
+    : Number(formData.get("stock") ?? 0);
+  const colorNames = [...new Set(variations.map((v) => v.color).filter(Boolean))];
 
   const slug = await uniqueSlug(supabase, slugify(name), id);
 
@@ -80,7 +101,7 @@ export async function saveProduct(formData: FormData) {
     category_id: categoryId,
     price,
     promo_price: promoPrice,
-    color: colors.length === 1 && colors[0].name ? colors[0].name : colors.length > 1 ? colors.map((c) => c.name).join(", ") : null,
+    color: colorNames.length > 0 ? colorNames.join(", ") : null,
     stock,
     weight_grams: weightGrams,
     is_active: isActive,
@@ -95,8 +116,9 @@ export async function saveProduct(formData: FormData) {
       .from("products")
       .update(productData)
       .eq("id", id);
-    if (error) throw new Error(error.message);
+    if (error) return { error: error.code === "23505" ? "Esse código do produto já está em uso." : error.message };
 
+    await supabase.from("product_barcodes").delete().eq("product_id", id);
     await supabase.from("product_sizes").delete().eq("product_id", id);
     await supabase.from("product_images").delete().eq("product_id", id);
   } else {
@@ -105,22 +127,43 @@ export async function saveProduct(formData: FormData) {
       .insert(productData)
       .select("id")
       .single();
-    if (error) throw new Error(error.message);
+    if (error) return { error: error.code === "23505" ? "Esse código do produto já está em uso." : error.message };
     productId = data.id;
   }
 
-  if (sizes.length > 0 && productId) {
-    const { error: sizesError } = await supabase.from("product_sizes").insert(
-      sizes.map((s) => ({ product_id: productId!, size: s.size, stock: s.stock, color: s.color }))
-    );
-    if (sizesError) throw new Error(sizesError.message);
+  if (variations.length > 0 && productId) {
+    const { data: inserted, error: sizesError } = await supabase
+      .from("product_sizes")
+      .insert(
+        variations.map((v) => ({
+          product_id: productId!,
+          size: v.size,
+          color: v.color || null,
+          stock: v.stock,
+          price: v.price,
+        }))
+      )
+      .select("id, size, color");
+    if (sizesError) return { error: sizesError.message };
+
+    const barcodeRows = variations.flatMap((v) => {
+      const row = inserted!.find((r) => r.size === v.size && (r.color ?? "") === v.color);
+      return v.barcodes.map((barcode) => ({ product_id: productId!, size_id: row?.id ?? null, barcode }));
+    });
+    if (barcodeRows.length > 0) {
+      const { error: bcError } = await supabase.from("product_barcodes").insert(barcodeRows);
+      if (bcError) {
+        return { error: bcError.code === "23505" ? "Um dos códigos de barras já está cadastrado em outro produto." : bcError.message };
+      }
+    }
   }
 
-  if (images.length > 0 && productId) {
+  if (photos.length > 0 && productId) {
     await supabase.from("product_images").insert(
-      images.map((url, index) => ({
+      photos.map((p, index) => ({
         product_id: productId!,
-        url,
+        url: p.url,
+        color: p.color || null,
         display_order: index,
       }))
     );

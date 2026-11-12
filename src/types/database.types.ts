@@ -209,8 +209,48 @@ export type Database = {
         }
         Relationships: []
       }
+      product_barcodes: {
+        Row: {
+          barcode: string
+          created_at: string
+          id: string
+          product_id: string
+          size_id: string | null
+        }
+        Insert: {
+          barcode: string
+          created_at?: string
+          id?: string
+          product_id: string
+          size_id?: string | null
+        }
+        Update: {
+          barcode?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          size_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_barcodes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_barcodes_size_id_fkey"
+            columns: ["size_id"]
+            isOneToOne: false
+            referencedRelation: "product_sizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_images: {
         Row: {
+          color: string | null
           created_at: string
           display_order: number
           id: string
@@ -218,6 +258,7 @@ export type Database = {
           url: string
         }
         Insert: {
+          color?: string | null
           created_at?: string
           display_order?: number
           id?: string
@@ -225,6 +266,7 @@ export type Database = {
           url: string
         }
         Update: {
+          color?: string | null
           created_at?: string
           display_order?: number
           id?: string
@@ -245,6 +287,7 @@ export type Database = {
         Row: {
           color: string | null
           id: string
+          price: number | null
           product_id: string
           size: string
           stock: number
@@ -252,13 +295,15 @@ export type Database = {
         Insert: {
           color?: string | null
           id?: string
+          price?: number | null
           product_id: string
-          size: string
+          size?: string
           stock?: number
         }
         Update: {
           color?: string | null
           id?: string
+          price?: number | null
           product_id?: string
           size?: string
           stock?: number

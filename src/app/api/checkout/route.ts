@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { AVARE_SHIPPING_COST, isAvareCep } from "@/config/store";
+
+const PICKUP_METHOD = "Retirar na Loja";
 
 type CheckoutItem = {
   productId: string;
@@ -30,10 +33,6 @@ type CheckoutBody = {
   };
 };
 
-function isAvareCep(cep: string) {
-  const digits = cep.replace(/\D/g, "");
-  return digits.length === 8 && digits.slice(0, 4) === "1870";
-}
 
 export async function POST(request: Request) {
   const body: CheckoutBody = await request.json();
@@ -66,7 +65,7 @@ export async function POST(request: Request) {
   const productIds = [...new Set(body.items.map((item) => item.productId))];
   const { data: products, error: productsError } = await supabase
     .from("products")
-    .select("id, name, price, promo_price, stock, is_active, product_sizes(id, size, stock)")
+    .select("id, name, price, promo_price, stock, is_active, product_sizes(id, size, stock, color, price)")
     .in("id", productIds);
 
   if (productsError || !products) {
@@ -96,9 +95,22 @@ export async function POST(request: Request) {
       );
     }
 
-    const availableStock = cartItem.size
-      ? product.product_sizes.find((s) => s.size === cartItem.size)?.stock ?? 0
-      : product.stock;
+    const hasColorVariations = product.product_sizes.some((s) => s.color);
+    const variation =
+      product.product_sizes.length > 0
+        ? product.product_sizes.find(
+            (s) =>
+              (s.size || null) === (cartItem.size || null) &&
+              (!hasColorVariations || s.color === cartItem.color)
+          )
+        : undefined;
+    if (product.product_sizes.length > 0 && !variation) {
+      return NextResponse.json(
+        { error: `A variação escolhida de ${product.name} não está mais disponível.` },
+        { status: 400 }
+      );
+    }
+    const availableStock = variation ? variation.stock : product.stock;
 
     if (cartItem.quantity > availableStock) {
       return NextResponse.json(
@@ -108,9 +120,11 @@ export async function POST(request: Request) {
     }
 
     const unitPrice =
-      product.promo_price != null && product.promo_price < product.price
-        ? product.promo_price
-        : product.price;
+      variation?.price != null
+        ? Number(variation.price)
+        : product.promo_price != null && product.promo_price < product.price
+          ? product.promo_price
+          : product.price;
 
     orderItemsToInsert.push({
       product_id: product.id,
@@ -124,8 +138,12 @@ export async function POST(request: Request) {
     subtotal += unitPrice * cartItem.quantity;
   }
 
-  const freeShipping = isAvareCep(body.address.cep);
-  const shippingCost = freeShipping ? 0 : body.shipping.cost;
+  const isPickup = body.shipping?.method === PICKUP_METHOD;
+  const shippingCost = isPickup
+    ? 0
+    : isAvareCep(body.address.cep)
+      ? AVARE_SHIPPING_COST
+      : body.shipping.cost;
   const total = subtotal + shippingCost;
 
   const { data: order, error: orderError } = await supabase
@@ -135,7 +153,7 @@ export async function POST(request: Request) {
       customer_email: body.customer.email,
       customer_phone: body.customer.phone,
       shipping_address: body.address,
-      shipping_method: freeShipping ? null : body.shipping.method,
+      shipping_method: isPickup ? PICKUP_METHOD : body.shipping.method,
       shipping_cost: shippingCost,
       subtotal,
       total,

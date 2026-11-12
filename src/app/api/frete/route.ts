@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { calculateShipping } from "@/lib/melhorenvio";
 import { createClient } from "@/lib/supabase/server";
+import { AVARE_SHIPPING_COST, isAvareCep } from "@/config/store";
 
-function isAvareCep(cep: string) {
-  const digits = cep.replace(/\D/g, "");
-  return digits.length === 8 && digits.slice(0, 4) === "1870";
-}
 
 async function buildPackage(items: { productId: string; quantity: number }[]) {
   if (!items || items.length === 0) return undefined;
@@ -41,9 +38,9 @@ export async function POST(request: Request) {
 
   if (isAvareCep(cep)) {
     return NextResponse.json({
-      freeShipping: true,
+      freeShipping: false,
       options: [
-        { service: "Entrega Local", price: 0, deadlineDays: 1 },
+        { service: "Entrega Local (Avaré)", price: AVARE_SHIPPING_COST, deadlineDays: 1 },
       ],
     });
   }

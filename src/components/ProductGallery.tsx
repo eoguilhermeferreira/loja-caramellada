@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 export function ProductGallery({
@@ -10,23 +10,26 @@ export function ProductGallery({
   images: { id: string; url: string }[];
   productName: string;
 }) {
+  const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [zoomStyle, setZoomStyle] = useState<{
-    backgroundImage: string;
-    backgroundPosition: string;
-  } | null>(null);
+  const imagesKey = images.map((i) => i.id).join(",");
 
-  const active = images[activeIndex];
+  useEffect(() => {
+    setActiveIndex(0);
+    trackRef.current?.scrollTo({ left: 0 });
+  }, [imagesKey]);
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-    if (!active) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setZoomStyle({
-      backgroundImage: `url(${active.url})`,
-      backgroundPosition: `${x}% ${y}%`,
-    });
+  function goTo(index: number) {
+    const track = trackRef.current;
+    if (!track) return;
+    const clamped = Math.max(0, Math.min(images.length - 1, index));
+    track.scrollTo({ left: clamped * track.clientWidth, behavior: "smooth" });
+  }
+
+  function handleScroll() {
+    const track = trackRef.current;
+    if (!track) return;
+    setActiveIndex(Math.round(track.scrollLeft / track.clientWidth));
   }
 
   if (images.length === 0) {
@@ -39,23 +42,50 @@ export function ProductGallery({
 
   return (
     <div>
-      <div
-        className="group relative aspect-square w-full overflow-hidden rounded-xl bg-brand-secondary/30"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setZoomStyle(null)}
-      >
-        <Image
-          src={active.url}
-          alt={productName}
-          fill
-          priority
-          className="object-cover"
-        />
-        {zoomStyle && (
-          <div
-            className="absolute inset-0 hidden bg-no-repeat group-hover:block"
-            style={{ ...zoomStyle, backgroundSize: "200%" }}
-          />
+      <div className="group relative">
+        <div
+          ref={trackRef}
+          onScroll={handleScroll}
+          className="flex aspect-square w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-xl bg-brand-secondary/30 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {images.map((image, i) => (
+            <div key={image.id} className="relative h-full w-full shrink-0 snap-center">
+              <Image
+                src={image.url}
+                alt={`${productName} - imagem ${i + 1}`}
+                fill
+                priority={i === 0}
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
+
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => goTo(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="Foto anterior"
+              className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-brand-text shadow transition-opacity hover:bg-white disabled:opacity-0 md:flex"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => goTo(activeIndex + 1)}
+              disabled={activeIndex === images.length - 1}
+              aria-label="Próxima foto"
+              className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-brand-text shadow transition-opacity hover:bg-white disabled:opacity-0 md:flex"
+            >
+              ›
+            </button>
+            <span className="absolute bottom-2 right-2 rounded-full bg-black/50 px-2 py-0.5 text-xs text-white">
+              {activeIndex + 1}/{images.length}
+            </span>
+          </>
         )}
       </div>
 
@@ -64,19 +94,13 @@ export function ProductGallery({
           {images.map((image, i) => (
             <button
               key={image.id}
-              onClick={() => setActiveIndex(i)}
+              type="button"
+              onClick={() => goTo(i)}
               className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
-                i === activeIndex
-                  ? "border-brand-primary"
-                  : "border-transparent"
+                i === activeIndex ? "border-brand-primary" : "border-transparent"
               }`}
             >
-              <Image
-                src={image.url}
-                alt={`${productName} - imagem ${i + 1}`}
-                fill
-                className="object-cover"
-              />
+              <Image src={image.url} alt="" fill sizes="64px" className="object-cover" />
             </button>
           ))}
         </div>

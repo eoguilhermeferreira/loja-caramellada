@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/components/CartProvider";
 import { ShippingCalculator } from "@/components/ShippingCalculator";
+import { ProductGallery } from "@/components/ProductGallery";
 import type { Tables } from "@/types/database.types";
 
 type Product = Tables<"products"> & {
@@ -12,53 +13,86 @@ type Product = Tables<"products"> & {
   product_sizes: Tables<"product_sizes">[];
 };
 
-export function ProductDetails({ product }: { product: Product }) {
+export function ProductView({ product }: { product: Product }) {
+  const allVariations = product.product_sizes;
+  const colors = useMemo(
+    () => [...new Set(allVariations.map((s) => s.color).filter(Boolean))] as string[],
+    [allVariations]
+  );
+  const [selectedColor, setSelectedColor] = useState<string | null>(colors[0] ?? null);
+
+  const images = useMemo(() => {
+    const sorted = [...product.product_images].sort((a, b) => a.display_order - b.display_order);
+    const forColor = selectedColor ? sorted.filter((i) => i.color === selectedColor) : [];
+    if (forColor.length > 0) return forColor;
+    const general = sorted.filter((i) => !i.color);
+    return general.length > 0 ? general : sorted;
+  }, [product.product_images, selectedColor]);
+
+  return (
+    <div className="grid gap-10 md:grid-cols-2">
+      <ProductGallery images={images} productName={product.name} />
+      <ProductDetails
+        product={product}
+        colors={colors}
+        selectedColor={selectedColor}
+        onColorChange={setSelectedColor}
+        coverUrl={images[0]?.url ?? null}
+      />
+    </div>
+  );
+}
+
+function ProductDetails({
+  product,
+  colors,
+  selectedColor,
+  onColorChange,
+  coverUrl,
+}: {
+  product: Product;
+  colors: string[];
+  selectedColor: string | null;
+  onColorChange: (color: string) => void;
+  coverUrl: string | null;
+}) {
   const router = useRouter();
   const { addItem } = useCart();
-  const allSizes = product.product_sizes;
-
-  const colors = useMemo(() => {
-    const names = [...new Set(allSizes.map((s) => s.color).filter(Boolean))] as string[];
-    return names;
-  }, [allSizes]);
-
+  const allVariations = product.product_sizes;
   const hasColors = colors.length > 0;
-  const hasSizes = allSizes.length > 0;
+  const hasVariations = allVariations.length > 0;
 
-  const [selectedColor, setSelectedColor] = useState<string | null>(
-    hasColors ? colors[0] : null
+  const variationsForColor = useMemo(
+    () => allVariations.filter((s) => !hasColors || s.color === selectedColor),
+    [allVariations, hasColors, selectedColor]
   );
-  const [selectedSize, setSelectedSize] = useState<string | null>(() => {
-    const firstColor = hasColors ? colors[0] : null;
-    const relevantSizes = allSizes.filter((s) => !hasColors || s.color === firstColor);
-    return relevantSizes[0]?.size ?? null;
-  });
+  const sizesForColor = variationsForColor.filter((s) => s.size);
+
+  const [selectedSize, setSelectedSize] = useState<string | null>(
+    () => (sizesForColor.find((s) => s.stock > 0) ?? sizesForColor[0])?.size ?? null
+  );
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
-  const sizesForColor = useMemo(
-    () => allSizes.filter((s) => !hasColors || s.color === selectedColor),
-    [allSizes, hasColors, selectedColor]
-  );
+  const selectedVariation =
+    sizesForColor.length > 0
+      ? sizesForColor.find((s) => s.size === selectedSize)
+      : variationsForColor[0];
 
-  const selectedSizeStock = useMemo(() => {
-    if (!hasSizes) return product.stock;
-    return sizesForColor.find((s) => s.size === selectedSize)?.stock ?? 0;
-  }, [hasSizes, sizesForColor, selectedSize, product.stock]);
+  const selectedSizeStock = hasVariations ? selectedVariation?.stock ?? 0 : product.stock;
 
   function handleColorChange(color: string) {
-    setSelectedColor(color);
-    const firstAvailable = allSizes.find((s) => s.color === color && s.stock > 0);
-    setSelectedSize(firstAvailable?.size ?? allSizes.find((s) => s.color === color)?.size ?? null);
+    onColorChange(color);
+    const sizes = allVariations.filter((s) => s.color === color && s.size);
+    setSelectedSize((sizes.find((s) => s.stock > 0) ?? sizes[0])?.size ?? null);
     setQuantity(1);
   }
 
+  const variationPrice = selectedVariation?.price ?? null;
   const hasPromo =
-    product.promo_price != null && product.promo_price < product.price;
-  const outOfStock = hasSizes ? selectedSizeStock <= 0 : product.stock <= 0;
-  const mainImage = [...product.product_images].sort(
-    (a, b) => a.display_order - b.display_order
-  )[0];
+    variationPrice == null && product.promo_price != null && product.promo_price < product.price;
+  const finalPrice = variationPrice ?? (hasPromo ? product.promo_price! : product.price);
+  const outOfStock = selectedSizeStock <= 0;
 
   function addToCart() {
     addItem(
@@ -66,9 +100,9 @@ export function ProductDetails({ product }: { product: Product }) {
         productId: product.id,
         slug: product.slug,
         name: product.name,
-        imageUrl: mainImage?.url ?? null,
-        unitPrice: hasPromo ? product.promo_price! : product.price,
-        size: selectedSize,
+        imageUrl: coverUrl,
+        unitPrice: finalPrice,
+        size: selectedVariation?.size || null,
         color: selectedColor ?? product.color,
         stock: selectedSizeStock,
       },
@@ -112,7 +146,7 @@ export function ProductDetails({ product }: { product: Product }) {
           </>
         ) : (
           <span className="text-3xl font-semibold text-brand-text">
-            {formatPrice(product.price)}
+            {formatPrice(finalPrice)}
           </span>
         )}
       </div>

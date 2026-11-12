@@ -1,13 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { saveProduct, uploadProductImage } from "@/app/admin/actions";
-import { SIZES } from "@/config/store";
 
 type Category = { id: string; name: string };
 
-type ColorEntry = { name: string; sizes: { size: string; stock: number }[] };
+type Variation = {
+  key: string;
+  color: string;
+  size: string;
+  price: string | null;
+  stock: number;
+  barcodes: string;
+};
+
+type Photo = { url: string; color: string };
 
 type ExistingProduct = {
   id: string;
@@ -21,107 +29,185 @@ type ExistingProduct = {
   weight_grams: number;
   is_active: boolean;
   is_best_seller: boolean;
-  product_images: { url: string }[];
-  product_sizes: { size: string; stock: number; color: string | null }[];
+  product_images: { url: string; color: string | null; display_order: number }[];
+  product_sizes: { id: string; size: string; stock: number; color: string | null; price: number | null }[];
+  product_barcodes: { barcode: string; size_id: string | null }[];
 };
 
-function buildInitialColors(product: ExistingProduct | undefined): ColorEntry[] {
-  if (!product || product.product_sizes.length === 0) return [{ name: "", sizes: [] }];
-  const map = new Map<string, { size: string; stock: number }[]>();
-  for (const s of product.product_sizes) {
-    const key = s.color ?? "";
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push({ size: s.size, stock: s.stock });
-  }
-  return Array.from(map.entries()).map(([name, sizes]) => ({ name, sizes }));
+const inputClass =
+  "min-w-0 w-full rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary";
+
+let keySeq = 0;
+const newKey = () => `v${++keySeq}`;
+
+function initialVariations(product?: ExistingProduct): Variation[] {
+  if (!product) return [];
+  return product.product_sizes.map((s) => ({
+    key: s.id,
+    color: s.color ?? "",
+    size: s.size ?? "",
+    price: s.price != null ? String(s.price) : null,
+    stock: s.stock,
+    barcodes: product.product_barcodes
+      .filter((b) => b.size_id === s.id)
+      .map((b) => b.barcode)
+      .join(", "),
+  }));
 }
 
-export function ProductForm({
-  categories,
-  product,
+function PhotoGroup({
+  label,
+  photos,
+  onAdd,
+  onRemove,
+  onMove,
 }: {
-  categories: Category[];
-  product?: ExistingProduct;
+  label: string;
+  photos: string[];
+  onAdd: (files: FileList) => Promise<void>;
+  onRemove: (url: string) => void;
+  onMove: (url: string, dir: -1 | 1) => void;
 }) {
-  const [images, setImages] = useState<string[]>(
-    product?.product_images.map((i) => i.url) ?? []
-  );
-  const [colors, setColors] = useState<ColorEntry[]>(() => buildInitialColors(product));
-  const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
+  async function handle(files: FileList | null) {
+    if (!files?.length) return;
     setUploading(true);
     try {
-      for (const file of Array.from(files)) {
-        const formData = new FormData();
-        formData.set("file", file);
-        const url = await uploadProductImage(formData);
-        setImages((current) => [...current, url]);
-      }
-    } catch {
-      setError("Não foi possível enviar uma das imagens.");
+      await onAdd(files);
     } finally {
       setUploading(false);
     }
   }
 
-  function removeImage(url: string) {
-    setImages((current) => current.filter((i) => i !== url));
+  return (
+    <div className="rounded-lg border border-brand-secondary/60 p-4">
+      <p className="text-sm font-medium text-brand-text">{label}</p>
+      <div className="mt-3 flex flex-wrap gap-3">
+        {photos.map((url, i) => (
+          <div key={url} className="relative h-24 w-24 overflow-hidden rounded-lg bg-brand-secondary/20">
+            <Image src={url} alt="" fill className="object-cover" />
+            {i === 0 && (
+              <span className="absolute left-1 top-1 rounded bg-brand-primary px-1 text-[10px] text-white">Capa</span>
+            )}
+            <button type="button" onClick={() => onRemove(url)} aria-label="Remover foto"
+              className="absolute right-1 top-1 rounded-full bg-black/60 px-1.5 text-xs text-white">×</button>
+            <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/40 text-xs text-white">
+              <button type="button" disabled={i === 0} onClick={() => onMove(url, -1)} className="px-2 disabled:opacity-30" aria-label="Mover para esquerda">←</button>
+              <button type="button" disabled={i === photos.length - 1} onClick={() => onMove(url, 1)} className="px-2 disabled:opacity-30" aria-label="Mover para direita">→</button>
+            </div>
+          </div>
+        ))}
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); handle(e.dataTransfer.files); }}
+          onClick={() => inputRef.current?.click()}
+          className={`flex h-24 min-w-24 flex-1 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed px-3 text-center text-xs text-brand-text/60 transition-colors ${
+            dragOver ? "border-brand-primary bg-brand-secondary/10" : "border-brand-secondary"
+          }`}
+        >
+          {uploading ? "Enviando..." : "+ Arraste fotos aqui ou clique"}
+          <input ref={inputRef} type="file" accept="image/*" multiple className="hidden"
+            onChange={(e) => { handle(e.target.files); e.target.value = ""; }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProductForm({
+  categories,
+  product,
+  highlightVariation,
+}: {
+  categories: Category[];
+  product?: ExistingProduct;
+  highlightVariation?: string;
+}) {
+  const [defaultPrice, setDefaultPrice] = useState(product ? String(product.price) : "");
+  const [variations, setVariations] = useState<Variation[]>(() => initialVariations(product));
+  const [photos, setPhotos] = useState<Photo[]>(() =>
+    [...(product?.product_images ?? [])]
+      .sort((a, b) => a.display_order - b.display_order)
+      .map((i) => ({ url: i.url, color: i.color ?? "" }))
+  );
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const variationColors = useMemo(
+    () => [...new Set(variations.map((v) => v.color.trim()).filter(Boolean))],
+    [variations]
+  );
+  const hasGeneralPhotos = photos.some((p) => !p.color);
+  const photoColors =
+    variationColors.length === 0 ? [""] : hasGeneralPhotos ? [...variationColors, ""] : variationColors;
+
+  const orphanPhotos = photos.filter((p) => p.color && !variationColors.includes(p.color));
+
+  useEffect(() => {
+    if (highlightVariation) {
+      document.getElementById(`var-${highlightVariation}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightVariation]);
+
+  function updateVariation(key: string, patch: Partial<Variation>) {
+    setVariations((vs) => vs.map((v) => (v.key === key ? { ...v, ...patch } : v)));
   }
 
-  function addColor() {
-    setColors((c) => [...c, { name: "", sizes: [] }]);
+  function addVariation() {
+    setVariations((vs) => [
+      ...vs,
+      { key: newKey(), color: vs.at(-1)?.color ?? "", size: "", price: null, stock: 1, barcodes: "" },
+    ]);
   }
 
-  function removeColor(index: number) {
-    setColors((c) => c.filter((_, i) => i !== index));
+  async function addPhotos(color: string, files: FileList) {
+    try {
+      for (const file of Array.from(files)) {
+        const fd = new FormData();
+        fd.set("file", file);
+        const url = await uploadProductImage(fd);
+        setPhotos((ps) => [...ps, { url, color }]);
+      }
+    } catch {
+      setError("Não foi possível enviar uma das fotos.");
+    }
   }
 
-  function updateColorName(index: number, name: string) {
-    setColors((c) => c.map((entry, i) => (i === index ? { ...entry, name } : entry)));
-  }
-
-  function toggleSize(colorIndex: number, size: string) {
-    setColors((c) =>
-      c.map((entry, i) => {
-        if (i !== colorIndex) return entry;
-        const exists = entry.sizes.find((s) => s.size === size);
-        return {
-          ...entry,
-          sizes: exists
-            ? entry.sizes.filter((s) => s.size !== size)
-            : [...entry.sizes, { size, stock: 0 }],
-        };
-      })
-    );
-  }
-
-  function updateSizeStock(colorIndex: number, size: string, stock: number) {
-    setColors((c) =>
-      c.map((entry, i) => {
-        if (i !== colorIndex) return entry;
-        return {
-          ...entry,
-          sizes: entry.sizes.map((s) => (s.size === size ? { ...s, stock } : s)),
-        };
-      })
-    );
+  function movePhoto(url: string, dir: -1 | 1) {
+    setPhotos((ps) => {
+      const photo = ps.find((p) => p.url === url)!;
+      const group = ps.filter((p) => p.color === photo.color);
+      const idx = group.indexOf(photo);
+      const swap = group[idx + dir];
+      if (!swap) return ps;
+      return ps.map((p) => (p === photo ? swap : p === swap ? photo : p));
+    });
   }
 
   async function handleSubmit(formData: FormData) {
     setSubmitting(true);
     setError(null);
-    formData.set("images", JSON.stringify(images));
-    formData.set("colors", JSON.stringify(colors));
-    try {
-      await saveProduct(formData);
-    } catch {
-      setError("Não foi possível salvar o produto.");
+    const base = Number(defaultPrice);
+    formData.set(
+      "variations",
+      JSON.stringify(
+        variations.map((v) => ({
+          color: v.color.trim(),
+          size: v.size.trim(),
+          stock: v.stock,
+          price: v.price != null && v.price !== "" && Number(v.price) !== base ? Number(v.price) : null,
+          barcodes: v.barcodes.split(/[\s,;]+/).map((b) => b.trim()).filter(Boolean),
+        }))
+      )
+    );
+    formData.set("photos", JSON.stringify(photos));
+    const result = await saveProduct(formData);
+    if (result?.error) {
+      setError(result.error);
       setSubmitting(false);
     }
   }
@@ -133,228 +219,141 @@ export function ProductForm({
       <section className="rounded-xl bg-brand-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-brand-text">Informações</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <input
-            type="text"
-            name="name"
-            placeholder="Nome do produto"
-            defaultValue={product?.name}
-            required
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
-          />
-          <input
-            type="text"
-            name="code"
-            placeholder="Código do produto (deixe em branco para gerar automaticamente)"
-            defaultValue={product?.code}
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
-          />
-          <textarea
-            name="description"
-            placeholder="Descrição"
-            defaultValue={product?.description}
-            rows={4}
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
-          />
-          <select
-            name="category_id"
-            defaultValue={product?.category_id ?? ""}
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-          >
+          <input type="text" name="name" placeholder="Nome do produto" defaultValue={product?.name} required
+            className={`${inputClass} sm:col-span-2`} />
+          <textarea name="description" placeholder="Descrição" defaultValue={product?.description} rows={4}
+            className={`${inputClass} sm:col-span-2`} />
+          <select name="category_id" defaultValue={product?.category_id ?? ""} className={inputClass}>
             <option value="">Sem categoria</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <input
-            type="number"
-            step="0.01"
-            name="price"
-            placeholder="Preço"
-            defaultValue={product?.price}
-            required
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-          />
-          <input
-            type="number"
-            step="0.01"
-            name="promo_price"
-            placeholder="Preço promocional (opcional)"
-            defaultValue={product?.promo_price ?? ""}
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-          />
-          <input
-            type="number"
-            name="stock"
-            placeholder="Estoque geral (sem variação por tamanho)"
-            defaultValue={product?.stock ?? 0}
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
-          />
-          <input
-            type="number"
-            name="weight_grams"
-            placeholder="Peso (em gramas)"
-            defaultValue={product?.weight_grams ?? 300}
-            required
-            className="rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary sm:col-span-2"
-          />
+          <label className="flex flex-col gap-1 text-xs text-brand-text/60">
+            Código do produto (referência)
+            <input type="text" name="code" placeholder="Em branco = gerado automaticamente" defaultValue={product?.code}
+              className={`${inputClass} font-mono text-brand-text`} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-brand-text/60">
+            Preço padrão
+            <input type="number" step="0.01" min="0" name="price" value={defaultPrice}
+              onChange={(e) => setDefaultPrice(e.target.value)} required className={`${inputClass} text-brand-text`} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-brand-text/60">
+            Preço promocional (opcional — o padrão aparece riscado)
+            <input type="number" step="0.01" min="0" name="promo_price" defaultValue={product?.promo_price ?? ""}
+              className={`${inputClass} text-brand-text`} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-brand-text/60">
+            Peso (gramas)
+            <input type="number" name="weight_grams" defaultValue={product?.weight_grams ?? 300} required
+              className={`${inputClass} text-brand-text`} />
+          </label>
+          {variations.length === 0 && (
+            <label className="flex flex-col gap-1 text-xs text-brand-text/60">
+              Estoque (produto sem variações)
+              <input type="number" name="stock" min="0" defaultValue={product?.stock ?? 0}
+                className={`${inputClass} text-brand-text`} />
+            </label>
+          )}
           <label className="flex items-center gap-2 text-sm text-brand-text sm:col-span-2">
-            <input
-              type="checkbox"
-              name="is_active"
-              defaultChecked={product?.is_active ?? true}
-            />
+            <input type="checkbox" name="is_active" defaultChecked={product?.is_active ?? true} />
             Produto ativo (visível na loja)
           </label>
           <label className="flex items-center gap-2 text-sm text-brand-text sm:col-span-2">
-            <input
-              type="checkbox"
-              name="is_best_seller"
-              defaultChecked={product?.is_best_seller ?? false}
-            />
+            <input type="checkbox" name="is_best_seller" defaultChecked={product?.is_best_seller ?? false} />
             <span>
               <span className="font-medium">Mais Vendido</span>
-              <span className="ml-1 text-brand-text/50">— aparece na seção "Mais Vendidos" da página inicial</span>
+              <span className="ml-1 text-brand-text/50">— aparece na seção &quot;Mais Vendidos&quot; da página inicial</span>
             </span>
           </label>
         </div>
       </section>
 
       <section className="rounded-xl bg-brand-white p-5 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-brand-text">Cores, tamanhos e estoque</h2>
-            <p className="mt-0.5 text-xs text-brand-text/50">
-              Adicione uma cor por vez com os tamanhos e estoques disponíveis. Se não tem variação de cor, deixe o campo de cor em branco.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={addColor}
-            className="rounded-lg border border-brand-secondary px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:border-brand-primary"
-          >
-            + Cor
-          </button>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-4">
-          {colors.map((entry, colorIndex) => (
-            <div key={colorIndex} className="rounded-lg border border-brand-secondary/60 p-4">
-              <div className="flex items-center gap-3">
-                <input
-                  type="text"
-                  placeholder="Nome da cor (ex: Azul, Rosa, Branco)"
-                  value={entry.name}
-                  onChange={(e) => updateColorName(colorIndex, e.target.value)}
-                  className="flex-1 rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
-                />
-                {colors.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeColor(colorIndex)}
-                    className="text-sm text-brand-text/40 hover:text-red-500"
-                  >
-                    Remover
-                  </button>
-                )}
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {SIZES.map((size) => {
-                  const selected = entry.sizes.find((s) => s.size === size);
-                  return (
-                    <div key={size} className="flex flex-col items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => toggleSize(colorIndex, size)}
-                        className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                          selected
-                            ? "border-brand-primary bg-brand-primary text-white"
-                            : "border-brand-secondary text-brand-text hover:border-brand-primary"
-                        }`}
-                      >
-                        {size}
-                      </button>
-                      {selected && (
-                        <input
-                          type="number"
-                          min={0}
-                          value={selected.stock}
-                          onChange={(e) =>
-                            updateSizeStock(colorIndex, size, Number(e.target.value))
-                          }
-                          className="w-16 rounded-md border border-brand-secondary px-2 py-1 text-center text-xs"
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+        <h2 className="text-lg font-semibold text-brand-text">Fotos</h2>
+        <p className="mt-0.5 text-xs text-brand-text/50">
+          As fotos ficam ligadas à cor: todos os tamanhos da mesma cor usam as mesmas fotos. A primeira é a capa.
+        </p>
+        <div className="mt-4 flex flex-col gap-3">
+          {photoColors.map((color) => (
+            <PhotoGroup
+              key={color || "_none"}
+              label={color ? `Cor: ${color}` : variationColors.length > 0 ? "Fotos gerais (aparecem quando a cor não tem foto)" : "Fotos do produto"}
+              photos={photos.filter((p) => p.color === color).map((p) => p.url)}
+              onAdd={(files) => addPhotos(color, files)}
+              onRemove={(url) => setPhotos((ps) => ps.filter((p) => p.url !== url))}
+              onMove={movePhoto}
+            />
           ))}
+          {orphanPhotos.length > 0 && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+              {orphanPhotos.length} foto(s) estão ligadas a cores que não existem mais nas variações
+              ({[...new Set(orphanPhotos.map((p) => p.color || "sem cor"))].join(", ")}).
+              <button type="button" className="ml-2 underline"
+                onClick={() => setPhotos((ps) => ps.map((p) => (p.color && !variationColors.includes(p.color) ? { ...p, color: "" } : p)))}>
+                Mover para fotos gerais
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
       <section className="rounded-xl bg-brand-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-brand-text">Imagens</h2>
-
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            handleFiles(e.dataTransfer.files);
-          }}
-          onClick={() => fileInputRef.current?.click()}
-          className={`mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${
-            dragOver ? "border-brand-primary bg-brand-secondary/10" : "border-brand-secondary"
-          }`}
-        >
-          <p className="text-sm text-brand-text/70">
-            {uploading
-              ? "Enviando imagem(ns)..."
-              : "Arraste imagens aqui ou clique para selecionar"}
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold text-brand-text">Variações</h2>
+            <p className="mt-0.5 text-xs text-brand-text/50">
+              Cor e tamanho são opcionais (em branco não aparecem na loja). Ex.: laço = só cor; sapato = só tamanho.
+              Código de barras aparece só no admin.
+            </p>
+          </div>
+          <button type="button" onClick={addVariation}
+            className="shrink-0 rounded-lg border border-brand-secondary px-3 py-1.5 text-sm font-medium text-brand-text transition-colors hover:border-brand-primary">
+            + Adicionar variação
+          </button>
         </div>
 
-        {images.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-3">
-            {images.map((url) => (
-              <div key={url} className="relative h-20 w-20 overflow-hidden rounded-lg">
-                <Image src={url} alt="" fill className="object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeImage(url)}
-                  className="absolute right-0.5 top-0.5 rounded-full bg-black/60 px-1.5 text-xs text-white"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+        {variations.length > 0 && (
+          <div className="mt-4 flex flex-col gap-2">
+            <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.6fr_1.4fr_auto] gap-2 px-2 text-xs text-brand-text/50 md:grid">
+              <span>Cor</span><span>Tamanho</span><span>Preço</span><span>Estoque</span><span>Código(s) de barras</span><span />
+            </div>
+            {variations.map((v) => {
+              const highlighted = highlightVariation === v.key;
+              return (
+                <div key={v.key} id={`var-${v.key}`}
+                  className={`grid grid-cols-2 gap-2 rounded-lg p-2 md:grid-cols-[1fr_0.8fr_0.8fr_0.6fr_1.4fr_auto] ${
+                    highlighted ? "bg-yellow-100 ring-2 ring-yellow-400" : "bg-brand-secondary/10"
+                  }`}>
+                  <input placeholder="Cor (opcional)" value={v.color} aria-label="Cor"
+                    onChange={(e) => updateVariation(v.key, { color: e.target.value })} className={inputClass} />
+                  <input placeholder="Tamanho (opcional)" value={v.size} aria-label="Tamanho"
+                    onChange={(e) => updateVariation(v.key, { size: e.target.value })} className={inputClass} />
+                  <input type="number" step="0.01" min="0" aria-label="Preço da variação"
+                    value={v.price ?? defaultPrice}
+                    onChange={(e) => updateVariation(v.key, { price: e.target.value === defaultPrice ? null : e.target.value })}
+                    className={`${inputClass} ${v.price != null ? "font-semibold text-brand-primary" : ""}`} />
+                  <input type="number" min="0" aria-label="Estoque" value={v.stock}
+                    onChange={(e) => updateVariation(v.key, { stock: Number(e.target.value) })} className={inputClass} />
+                  <input placeholder="Códigos (separe por vírgula)" value={v.barcodes} aria-label="Códigos de barras"
+                    onChange={(e) => updateVariation(v.key, { barcodes: e.target.value })}
+                    className={`${inputClass} col-span-2 font-mono md:col-span-1`} />
+                  <button type="button" onClick={() => setVariations((vs) => vs.filter((x) => x.key !== v.key))}
+                    className="col-span-2 text-sm text-brand-text/40 hover:text-red-500 md:col-span-1">
+                    Remover
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={submitting || uploading}
-        className="self-start rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60"
-      >
+      <button type="submit" disabled={submitting}
+        className="self-start rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-accent disabled:opacity-60">
         {submitting ? "Salvando..." : "Salvar Produto"}
       </button>
     </form>

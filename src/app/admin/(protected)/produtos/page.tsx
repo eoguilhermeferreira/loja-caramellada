@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { DeleteProductButton } from "./DeleteProductButton";
@@ -9,15 +10,30 @@ export default async function AdminProductsPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const term = q?.trim() ?? "";
   const supabase = await createClient();
+
+  if (term) {
+    const { data: barcode } = await supabase
+      .from("product_barcodes")
+      .select("product_id, size_id")
+      .eq("barcode", term)
+      .maybeSingle();
+    if (barcode) {
+      redirect(`/admin/produtos/${barcode.product_id}${barcode.size_id ? `?v=${barcode.size_id}` : ""}`);
+    }
+    const { data: exact } = await supabase.from("products").select("id").eq("code", term).maybeSingle();
+    if (exact) redirect(`/admin/produtos/${exact.id}`);
+  }
 
   let query = supabase
     .from("products")
     .select("id, code, name, price, promo_price, stock, is_active, categories(name)")
     .order("created_at", { ascending: false });
 
-  if (q) {
-    query = query.ilike("code", `%${q.trim()}%`);
+  if (term) {
+    const safe = term.replace(/[%,()*\\]/g, " ");
+    query = query.or(`code.ilike.%${safe}%,name.ilike.%${safe}%`);
   }
 
   const { data: products } = await query;
@@ -39,8 +55,9 @@ export default async function AdminProductsPage({
           type="text"
           name="q"
           defaultValue={q ?? ""}
-          placeholder="Buscar por código do produto"
-          className="w-full max-w-xs rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
+          autoFocus
+          placeholder="Referência, nome ou bipe o código de barras"
+          className="w-full max-w-sm rounded-lg border border-brand-secondary px-3 py-2 text-sm outline-none focus:border-brand-primary"
         />
         <button
           type="submit"
@@ -119,7 +136,7 @@ export default async function AdminProductsPage({
             {(products ?? []).length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-brand-text/50">
-                  {q ? "Nenhum produto encontrado com esse código." : "Nenhum produto cadastrado ainda."}
+                  {q ? "Nenhum produto encontrado." : "Nenhum produto cadastrado ainda."}
                 </td>
               </tr>
             )}
