@@ -42,13 +42,25 @@ export async function getBestSellerProducts(limit = 8) {
   return data ?? [];
 }
 
+export async function getNewProducts(limit = 8) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("*, product_images(*)")
+    .eq("is_active", true)
+    .eq("is_new", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
 export async function getPromoProducts(limit = 8) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
     .select("*, product_images(*)")
     .eq("is_active", true)
-    .not("promo_price", "is", null)
+    .eq("is_promo", true)
     .order("created_at", { ascending: false })
     .limit(limit);
   return data ?? [];

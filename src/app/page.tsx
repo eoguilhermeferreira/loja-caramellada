@@ -8,15 +8,19 @@ import {
   getCategories,
   getFeaturedProducts,
   getBestSellerProducts,
+  getNewProducts,
+  getPromoProducts,
 } from "@/lib/queries";
 
 export default async function Home() {
-  const [banners, categories, featuredProducts, bestSellers] =
+  const [banners, categories, featuredProducts, bestSellers, newProducts, promoProducts] =
     await Promise.all([
       getActiveBanners(),
       getCategories(),
       getFeaturedProducts(8),
       getBestSellerProducts(8),
+      getNewProducts(8),
+      getPromoProducts(8),
     ]);
 
   const topBanners = banners.slice(0, 2);
@@ -62,6 +66,24 @@ export default async function Home() {
           products={bestSellers}
           seeAllHref="/produtos"
           emptyMessage="Em breve nossos mais vendidos aqui!"
+        />
+      )}
+
+      {newProducts.length > 0 && (
+        <ProductSection
+          title="Novidades"
+          products={newProducts}
+          seeAllHref="/categoria/novidades"
+          emptyMessage="Novidades chegando em breve!"
+        />
+      )}
+
+      {promoProducts.length > 0 && (
+        <ProductSection
+          title="Promoções"
+          products={promoProducts}
+          seeAllHref="/categoria/promocoes"
+          emptyMessage="Promoções chegando em breve!"
         />
       )}
     </main>
