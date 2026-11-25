@@ -328,6 +328,8 @@ export type Database = {
           id: string
           is_active: boolean
           is_best_seller: boolean
+          is_new: boolean
+          is_promo: boolean
           name: string
           price: number
           promo_price: number | null
@@ -345,6 +347,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_best_seller?: boolean
+          is_new?: boolean
+          is_promo?: boolean
           name: string
           price: number
           promo_price?: number | null
@@ -362,6 +366,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_best_seller?: boolean
+          is_new?: boolean
+          is_promo?: boolean
           name?: string
           price?: number
           promo_price?: number | null

@@ -12,6 +12,7 @@ export function ProductGallery({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [zoomOrigin, setZoomOrigin] = useState<string | null>(null);
   const imagesKey = images.map((i) => i.id).join(",");
 
   useEffect(() => {
@@ -24,6 +25,13 @@ export function ProductGallery({
     if (!track) return;
     const clamped = Math.max(0, Math.min(images.length - 1, index));
     track.scrollTo({ left: clamped * track.clientWidth, behavior: "smooth" });
+  }
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomOrigin(`${x}% ${y}%`);
   }
 
   function handleScroll() {
@@ -42,7 +50,11 @@ export function ProductGallery({
 
   return (
     <div>
-      <div className="group relative">
+      <div
+        className="group relative"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setZoomOrigin(null)}
+      >
         <div
           ref={trackRef}
           onScroll={handleScroll}
@@ -62,6 +74,18 @@ export function ProductGallery({
           ))}
         </div>
 
+        {zoomOrigin && images[activeIndex] && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 hidden rounded-xl bg-no-repeat [@media(hover:hover)]:block"
+            style={{
+              backgroundImage: `url(${images[activeIndex].url})`,
+              backgroundSize: "220%",
+              backgroundPosition: zoomOrigin,
+            }}
+          />
+        )}
+
         {images.length > 1 && (
           <>
             <button
@@ -69,7 +93,7 @@ export function ProductGallery({
               onClick={() => goTo(activeIndex - 1)}
               disabled={activeIndex === 0}
               aria-label="Foto anterior"
-              className="absolute left-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-brand-text shadow transition-opacity hover:bg-white disabled:opacity-0 md:flex"
+              className="absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-brand-text shadow transition-opacity hover:bg-white disabled:opacity-0 md:flex"
             >
               ‹
             </button>
@@ -78,7 +102,7 @@ export function ProductGallery({
               onClick={() => goTo(activeIndex + 1)}
               disabled={activeIndex === images.length - 1}
               aria-label="Próxima foto"
-              className="absolute right-2 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-brand-text shadow transition-opacity hover:bg-white disabled:opacity-0 md:flex"
+              className="absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-xl text-brand-text shadow transition-opacity hover:bg-white disabled:opacity-0 md:flex"
             >
               ›
             </button>

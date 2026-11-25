@@ -30,6 +30,8 @@ type ExistingProduct = {
   weight_grams: number;
   is_active: boolean;
   is_best_seller: boolean;
+  is_new: boolean;
+  is_promo: boolean;
   product_images: { url: string; color: string | null; display_order: number }[];
   product_sizes: { id: string; size: string; stock: number; color: string | null; price: number | null }[];
   product_barcodes: { barcode: string; size_id: string | null }[];
@@ -259,13 +261,32 @@ export function ProductForm({
             <input type="checkbox" name="is_active" defaultChecked={product?.is_active ?? true} />
             Produto ativo (visível na loja)
           </label>
-          <label className="flex items-center gap-2 text-sm text-brand-text sm:col-span-2">
-            <input type="checkbox" name="is_best_seller" defaultChecked={product?.is_best_seller ?? false} />
-            <span>
-              <span className="font-medium">Mais Vendido</span>
-              <span className="ml-1 text-brand-text/50">— aparece na seção &quot;Mais Vendidos&quot; da página inicial</span>
-            </span>
-          </label>
+          <fieldset className="flex flex-col gap-2 rounded-lg border border-brand-secondary/60 p-3 sm:col-span-2">
+            <legend className="px-1 text-xs text-brand-text/60">
+              Aparecer também em (pode marcar mais de um — o produto continua na categoria escolhida acima)
+            </legend>
+            <label className="flex items-center gap-2 text-sm text-brand-text">
+              <input type="checkbox" name="is_best_seller" defaultChecked={product?.is_best_seller ?? false} />
+              <span>
+                <span className="font-medium">Mais Vendidos</span>
+                <span className="ml-1 text-brand-text/50">— seção da página inicial</span>
+              </span>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-brand-text">
+              <input type="checkbox" name="is_new" defaultChecked={product?.is_new ?? false} />
+              <span>
+                <span className="font-medium">Novidades</span>
+                <span className="ml-1 text-brand-text/50">— aba Novidades do menu</span>
+              </span>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-brand-text">
+              <input type="checkbox" name="is_promo" defaultChecked={product?.is_promo ?? false} />
+              <span>
+                <span className="font-medium">Promoções</span>
+                <span className="ml-1 text-brand-text/50">— aba Promoções do menu</span>
+              </span>
+            </label>
+          </fieldset>
         </div>
       </section>
 

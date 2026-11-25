@@ -60,6 +60,8 @@ export async function saveProduct(formData: FormData): Promise<{ error: string }
   const weightGrams = Number(formData.get("weight_grams") ?? 300);
   const isActive = formData.get("is_active") === "on";
   const isBestSeller = formData.get("is_best_seller") === "on";
+  const isNew = formData.get("is_new") === "on";
+  const isPromo = formData.get("is_promo") === "on";
 
   const variations: {
     color: string;
@@ -106,6 +108,8 @@ export async function saveProduct(formData: FormData): Promise<{ error: string }
     weight_grams: weightGrams,
     is_active: isActive,
     is_best_seller: isBestSeller,
+    is_new: isNew,
+    is_promo: isPromo,
     ...(code ? { code } : {}),
   };
 

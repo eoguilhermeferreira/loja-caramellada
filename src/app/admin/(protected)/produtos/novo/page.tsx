@@ -7,6 +7,7 @@ export default async function NewProductPage() {
   const { data: categories } = await supabase
     .from("categories")
     .select("id, name")
+    .not("slug", "in", "(novidades,promocoes)")
     .order("display_order");
 
   return (

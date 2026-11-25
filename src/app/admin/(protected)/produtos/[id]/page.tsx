@@ -17,7 +17,7 @@ export default async function EditProductPage({
   const supabase = await createClient();
 
   const [{ data: categories }, { data: product }] = await Promise.all([
-    supabase.from("categories").select("id, name").order("display_order"),
+    supabase.from("categories").select("id, name").not("slug", "in", "(novidades,promocoes)").order("display_order"),
     supabase
       .from("products")
       .select(

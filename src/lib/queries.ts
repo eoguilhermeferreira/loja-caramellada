@@ -74,7 +74,11 @@ export async function getProducts({
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
-  if (categorySlug) {
+  if (categorySlug === "novidades") {
+    query = query.eq("is_new", true);
+  } else if (categorySlug === "promocoes") {
+    query = query.eq("is_promo", true);
+  } else if (categorySlug) {
     const category = await getCategoryBySlug(categorySlug);
     if (!category) return [];
     query = query.eq("category_id", category.id);
