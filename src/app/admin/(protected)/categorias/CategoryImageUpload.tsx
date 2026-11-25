@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { uploadCategoryImage, updateCategoryImage } from "@/app/admin/actions";
+import { updateCategoryImage } from "@/app/admin/actions";
+import { uploadImage } from "@/lib/uploadImage";
 
 export function CategoryImageUpload({
   categoryId,
@@ -21,9 +22,7 @@ export function CategoryImageUpload({
     setUploading(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.set("file", file);
-      const url = await uploadCategoryImage(formData);
+      const url = await uploadImage("category-images", file);
       await updateCategoryImage(categoryId, url);
       setImageUrl(url);
     } catch {

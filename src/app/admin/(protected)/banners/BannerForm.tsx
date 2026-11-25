@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { saveBanner, uploadBannerImage } from "@/app/admin/actions";
+import { saveBanner } from "@/app/admin/actions";
+import { uploadImage } from "@/lib/uploadImage";
 
 type ExistingBanner = {
   id: string;
@@ -26,9 +27,7 @@ export function BannerForm({ banner }: { banner?: ExistingBanner }) {
     if (!file) return;
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.set("file", file);
-      const url = await uploadBannerImage(formData);
+      const url = await uploadImage("banner-images", file, 2400);
       setImageUrl(url);
     } catch {
       setError("Não foi possível enviar a imagem.");

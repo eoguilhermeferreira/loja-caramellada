@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { saveProduct, uploadProductImage } from "@/app/admin/actions";
+import { saveProduct } from "@/app/admin/actions";
+import { uploadImage } from "@/lib/uploadImage";
 
 type Category = { id: string; name: string };
 
@@ -167,13 +168,11 @@ export function ProductForm({
   async function addPhotos(color: string, files: FileList) {
     try {
       for (const file of Array.from(files)) {
-        const fd = new FormData();
-        fd.set("file", file);
-        const url = await uploadProductImage(fd);
+        const url = await uploadImage("product-images", file);
         setPhotos((ps) => [...ps, { url, color }]);
       }
-    } catch {
-      setError("Não foi possível enviar uma das fotos.");
+    } catch (e) {
+      setError(`Não foi possível enviar uma das fotos${e instanceof Error ? `: ${e.message}` : "."}`);
     }
   }
 
