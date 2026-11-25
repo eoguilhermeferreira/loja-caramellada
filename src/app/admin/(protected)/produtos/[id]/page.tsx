@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ProductForm } from "@/app/admin/(protected)/produtos/ProductForm";
@@ -32,6 +33,12 @@ export default async function EditProductPage({
 
   return (
     <div>
+      <Link
+        href="/admin/produtos"
+        className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-brand-text/60 transition-colors hover:text-brand-primary"
+      >
+        <span aria-hidden="true" className="text-lg leading-none">←</span> Voltar para Produtos
+      </Link>
       <h1 className="text-2xl font-semibold text-brand-text">Editar Produto</h1>
       {highlighted && (
         <p className="mt-2 rounded-lg bg-yellow-100 px-3 py-2 text-sm text-yellow-900">
